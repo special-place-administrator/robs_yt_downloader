@@ -59,11 +59,19 @@ namespace RobsYTDownloader.Services
                         exportedCount++;
                     }
 
-                    // 4. Export oauth_config.json (from app install folder)
-                    var oauthConfigFile = Path.Combine(appInstallFolder, "oauth_config.json");
-                    if (File.Exists(oauthConfigFile))
+                    // 4. Export oauth_config.json (check AppData first, then install folder)
+                    var oauthConfigFileAppData = Path.Combine(appDataFolder, "oauth_config.json");
+                    var oauthConfigFileInstall = Path.Combine(appInstallFolder, "oauth_config.json");
+
+                    if (File.Exists(oauthConfigFileAppData))
                     {
-                        await CopyFileAsync(oauthConfigFile, Path.Combine(tempFolder, "oauth_config.json"));
+                        await CopyFileAsync(oauthConfigFileAppData, Path.Combine(tempFolder, "oauth_config.json"));
+                        exportedCount++;
+                    }
+                    else if (File.Exists(oauthConfigFileInstall))
+                    {
+                        // Fallback to install folder for backward compatibility
+                        await CopyFileAsync(oauthConfigFileInstall, Path.Combine(tempFolder, "oauth_config.json"));
                         exportedCount++;
                     }
 
@@ -166,11 +174,11 @@ namespace RobsYTDownloader.Services
                         importedCount++;
                     }
 
-                    // 4. Import oauth_config.json
+                    // 4. Import oauth_config.json (to AppData, not install folder to avoid permission issues)
                     var oauthConfigFile = Path.Combine(tempFolder, "oauth_config.json");
                     if (File.Exists(oauthConfigFile))
                     {
-                        await CopyFileAsync(oauthConfigFile, Path.Combine(appInstallFolder, "oauth_config.json"));
+                        await CopyFileAsync(oauthConfigFile, Path.Combine(appDataFolder, "oauth_config.json"));
                         importedCount++;
                     }
 

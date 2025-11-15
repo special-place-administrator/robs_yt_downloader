@@ -42,8 +42,23 @@ namespace RobsYTDownloader
         {
             try
             {
-                var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "oauth_config.json");
-                if (!File.Exists(configPath))
+                // Check AppData first (preferred location, no admin rights needed)
+                var appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RobsYTDownloader");
+                var configPathAppData = Path.Combine(appDataFolder, "oauth_config.json");
+
+                // Fall back to install folder (for backward compatibility)
+                var configPathInstall = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "oauth_config.json");
+
+                string configPath;
+                if (File.Exists(configPathAppData))
+                {
+                    configPath = configPathAppData;
+                }
+                else if (File.Exists(configPathInstall))
+                {
+                    configPath = configPathInstall;
+                }
+                else
                 {
                     throw new FileNotFoundException(
                         "OAuth configuration file not found. Please copy oauth_config.json.template to oauth_config.json and fill in your Google OAuth credentials.\n\n" +

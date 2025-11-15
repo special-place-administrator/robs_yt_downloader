@@ -5,7 +5,7 @@
         xmlns:converters="clr-namespace:RobsYTDownloader.Converters"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
-        Title="Rob's YouTube Downloader - v1.1.0"
+        Title="Rob's YouTube Downloader - v1.1.1"
         Height="700"
         Width="950"
         MinHeight="600"
