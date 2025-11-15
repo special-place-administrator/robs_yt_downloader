@@ -159,9 +159,8 @@ begin
 
     // Show setup instructions
     MsgBox('Installation complete!' + #13#10#13#10 +
-           'IMPORTANT: Before using the Google Login feature, you need to:' + #13#10 +
-           '1. Create a Google OAuth application (see README.md)' + #13#10 +
-           '2. Edit oauth_config.json with your credentials' + #13#10#13#10 +
+           'When you first launch the application, a setup wizard will guide you through configuring Google OAuth for high-quality video downloads.' + #13#10#13#10 +
+           'You can also skip the setup and configure it later in Settings.' + #13#10#13#10 +
            'The app will create required folders in %APPDATA%\RobsYTDownloader on first run.',
            mbInformation, MB_OK);
   end;

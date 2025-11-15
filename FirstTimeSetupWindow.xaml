@@ -1,0 +1,179 @@
+<Window x:Class="RobsYTDownloader.FirstTimeSetupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        Title="First Time Setup - Rob's YouTube Downloader"
+        Height="650"
+        Width="800"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="{DynamicResource SystemControlPageBackgroundChromeLowBrush}">
+
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Welcome to Rob's YouTube Downloader!"
+                       FontSize="24"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,10"/>
+            <TextBlock Text="Before you can use the Google Login feature, you need to set up your OAuth credentials."
+                       FontSize="14"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Instructions -->
+                <ui:SimpleStackPanel Spacing="10" Margin="0,0,0,20">
+                    <TextBlock Text="Step 1: Create a Google OAuth Application"
+                               FontSize="16"
+                               FontWeight="SemiBold"/>
+
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+                        <Run Text="1. Go to "/><Hyperlink NavigateUri="https://console.cloud.google.com/" RequestNavigate="Hyperlink_RequestNavigate">Google Cloud Console</Hyperlink>
+                        <LineBreak/>
+                        <Run Text="2. Create a new project or select an existing one"/>
+                        <LineBreak/>
+                        <Run Text="3. Enable the YouTube Data API v3"/>
+                        <LineBreak/>
+                        <Run Text="4. Go to 'APIs &amp; Services' → 'Credentials' → 'Create Credentials' → 'OAuth client ID'"/>
+                        <LineBreak/>
+                        <Run Text="5. Application type: Desktop app"/>
+                        <LineBreak/>
+                        <Run Text="6. Copy your Client ID and Client Secret below"/>
+                    </TextBlock>
+
+                    <ui:HyperlinkButton Content="Open Google Cloud Console"
+                                       NavigateUri="https://console.cloud.google.com/apis/credentials"
+                                       Margin="0,5,0,0"/>
+                </ui:SimpleStackPanel>
+
+                <Border Background="{DynamicResource SystemControlAcrylicElementBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="20"
+                        Margin="0,0,0,20">
+                    <ui:SimpleStackPanel Spacing="15">
+                        <TextBlock Text="Step 2: Enter Your OAuth Credentials"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"/>
+
+                        <!-- Client ID -->
+                        <ui:SimpleStackPanel Spacing="5">
+                            <TextBlock Text="Client ID" FontWeight="Medium"/>
+                            <TextBox x:Name="ClientIdTextBox"
+                                     ui:ControlHelper.PlaceholderText="Your Google OAuth Client ID"
+                                     Height="32"/>
+                            <TextBlock x:Name="ClientIdError"
+                                       Text="Client ID cannot be empty"
+                                       Foreground="Red"
+                                       FontSize="12"
+                                       Visibility="Collapsed"/>
+                        </ui:SimpleStackPanel>
+
+                        <!-- Client Secret -->
+                        <ui:SimpleStackPanel Spacing="5">
+                            <TextBlock Text="Client Secret" FontWeight="Medium"/>
+                            <PasswordBox x:Name="ClientSecretPasswordBox"
+                                         ui:ControlHelper.PlaceholderText="Your Google OAuth Client Secret"
+                                         Height="32"
+                                         PasswordChanged="ClientSecretPasswordBox_PasswordChanged"/>
+                            <TextBlock x:Name="ClientSecretError"
+                                       Text="Client Secret cannot be empty"
+                                       Foreground="Red"
+                                       FontSize="12"
+                                       Visibility="Collapsed"/>
+                        </ui:SimpleStackPanel>
+
+                        <!-- Redirect URI -->
+                        <ui:SimpleStackPanel Spacing="5">
+                            <TextBlock Text="Redirect URI" FontWeight="Medium"/>
+                            <TextBox x:Name="RedirectUriTextBox"
+                                     Text="http://localhost:8080/"
+                                     Height="32"/>
+                            <TextBlock Text="Use default value unless you know what you're doing"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                        </ui:SimpleStackPanel>
+
+                        <!-- Scope -->
+                        <ui:SimpleStackPanel Spacing="5">
+                            <TextBlock Text="OAuth Scopes" FontWeight="Medium"/>
+                            <TextBox x:Name="ScopeTextBox"
+                                     Text="https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/userinfo.email"
+                                     Height="32"
+                                     IsReadOnly="True"
+                                     Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"/>
+                            <TextBlock Text="Required permissions (do not modify)"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                        </ui:SimpleStackPanel>
+                    </ui:SimpleStackPanel>
+                </Border>
+
+                <!-- Skip Option -->
+                <Border Background="{DynamicResource SystemControlBackgroundAccentBrush}"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Padding="15"
+                        Opacity="0.7">
+                    <ui:SimpleStackPanel Spacing="8">
+                        <TextBlock Text="⚠️ Optional Setup"
+                                   FontWeight="SemiBold"
+                                   Foreground="White"/>
+                        <TextBlock Text="You can skip this setup and configure OAuth later in Settings. However, you won't be able to download high-quality (4K/8K) videos or access members-only content without Google Login."
+                                   TextWrapping="Wrap"
+                                   Foreground="White"
+                                   FontSize="12"/>
+                    </ui:SimpleStackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Buttons -->
+        <Grid Grid.Row="2" Margin="0,20,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="SkipButton"
+                    Grid.Column="0"
+                    Content="Skip for Now"
+                    Width="120"
+                    Height="36"
+                    Click="SkipButton_Click"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
+
+            <Button x:Name="SaveButton"
+                    Grid.Column="2"
+                    Content="Save and Continue"
+                    Width="150"
+                    Height="36"
+                    Click="SaveButton_Click"
+                    Style="{StaticResource AccentButtonStyle}"/>
+
+            <Button x:Name="CancelButton"
+                    Grid.Column="4"
+                    Content="Exit"
+                    Width="100"
+                    Height="36"
+                    Click="CancelButton_Click"/>
+        </Grid>
+    </Grid>
+</Window>
