@@ -65,3 +65,8 @@ artifacts/
 
 # OAuth Configuration (contains secrets)
 oauth_config.json
+
+# Installer output
+installer_output/
+*.exe
+!bin/**/*.exe

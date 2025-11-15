@@ -29,7 +29,18 @@ A modern Windows 11-style YouTube downloader built with WPF (.NET 8.0) that supp
 
 ## Installation
 
-### Option 1: Build from Source
+### Option 1: Windows Installer (Recommended)
+
+1. Go to [Releases](https://github.com/special-place-administrator/robs_yt_downloader/releases)
+2. Download `RobsYTDownloader-Setup-v1.0.0.exe`
+3. Run the installer
+   - Choose installation directory
+   - Installer will check for .NET 8.0 and Node.js
+   - Creates desktop icon (optional)
+   - Adds to Start Menu
+   - Sets up PATH environment variable
+
+### Option 2: Build from Source
 
 ```bash
 # Clone the repository
@@ -43,11 +54,23 @@ dotnet build --configuration Release
 dotnet run --configuration Release
 ```
 
-### Option 2: Download Pre-built Release
+### Option 3: Build Installer from Source
 
-1. Go to [Releases](https://github.com/special-place-administrator/robs_yt_downloader/releases)
-2. Download the latest release ZIP
-3. Extract and run `RobsYTDownloader.exe`
+**Prerequisites:**
+- Inno Setup 6 or later: [Download here](https://jrsoftware.org/isdl.php)
+
+**Build Steps:**
+
+```powershell
+# Build the installer
+.\build_installer.ps1
+
+# Or manually:
+dotnet publish --configuration Release
+iscc installer.iss
+```
+
+The installer will be created in `installer_output\RobsYTDownloader-Setup-v1.0.0.exe`
 
 ## Google OAuth Setup (Required for Login)
 
