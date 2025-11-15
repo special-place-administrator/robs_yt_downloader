@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -146,6 +147,14 @@ namespace RobsYTDownloader
                 return;
             }
 
+            // Sanitize URL to extract video ID and remove playlist/extra parameters
+            var sanitizedUrl = SanitizeYouTubeUrl(url);
+            if (sanitizedUrl == null)
+            {
+                ShowNotification("Invalid YouTube URL format.", NotificationSeverity.Warning);
+                return;
+            }
+
             try
             {
                 // Show loading overlay
@@ -157,7 +166,7 @@ namespace RobsYTDownloader
                 UrlTextBox.IsEnabled = false;
 
                 // Run on background thread to prevent UI freeze
-                _currentVideo = await Task.Run(async () => await _downloadManager.FetchFormats(url)).ConfigureAwait(true);
+                _currentVideo = await Task.Run(async () => await _downloadManager.FetchFormats(sanitizedUrl)).ConfigureAwait(true);
 
                 HideLoading();
 
@@ -208,6 +217,15 @@ namespace RobsYTDownloader
         private async void DownloadButton_Click(object sender, RoutedEventArgs e)
         {
             var url = UrlTextBox.Text.Trim();
+
+            // Sanitize URL before downloading
+            var sanitizedUrl = SanitizeYouTubeUrl(url);
+            if (sanitizedUrl == null)
+            {
+                ShowNotification("Invalid YouTube URL format.", NotificationSeverity.Warning);
+                return;
+            }
+
             var selectedFormat = QualityComboBox.SelectedItem as VideoFormat;
 
             if (selectedFormat == null)
@@ -269,7 +287,7 @@ namespace RobsYTDownloader
                 // Create history item
                 var historyItem = new DownloadHistoryItem
                 {
-                    Url = url,
+                    Url = sanitizedUrl,
                     Title = _currentVideo.Title,
                     Quality = selectedFormat.DisplayName,
                     FilePath = outputPath,
@@ -287,7 +305,7 @@ namespace RobsYTDownloader
                 QualityComboBox.IsEnabled = false;
 
                 // Run on background thread to prevent UI freeze
-                await Task.Run(async () => await _downloadManager.DownloadVideo(url, selectedFormat.FormatId, outputPath)).ConfigureAwait(true);
+                await Task.Run(async () => await _downloadManager.DownloadVideo(sanitizedUrl, selectedFormat.FormatId, outputPath)).ConfigureAwait(true);
 
                 HideLoading();
 
@@ -348,6 +366,56 @@ namespace RobsYTDownloader
             }
 
             return sanitized;
+        }
+
+        private string? SanitizeYouTubeUrl(string url)
+        {
+            // Extract video ID from various YouTube URL formats
+            // Supports:
+            // - https://www.youtube.com/watch?v=VIDEO_ID
+            // - https://www.youtube.com/watch?v=VIDEO_ID&list=PLAYLIST_ID
+            // - https://youtu.be/VIDEO_ID
+            // - https://m.youtube.com/watch?v=VIDEO_ID
+            // - http://youtube.com/watch?v=VIDEO_ID
+            // And more variations
+
+            string? videoId = null;
+
+            // Pattern 1: Standard watch URLs (with or without query parameters)
+            var watchMatch = Regex.Match(url, @"[?&]v=([a-zA-Z0-9_-]{11})");
+            if (watchMatch.Success)
+            {
+                videoId = watchMatch.Groups[1].Value;
+            }
+
+            // Pattern 2: Short URLs (youtu.be)
+            if (videoId == null)
+            {
+                var shortMatch = Regex.Match(url, @"youtu\.be/([a-zA-Z0-9_-]{11})");
+                if (shortMatch.Success)
+                {
+                    videoId = shortMatch.Groups[1].Value;
+                }
+            }
+
+            // Pattern 3: Embed URLs
+            if (videoId == null)
+            {
+                var embedMatch = Regex.Match(url, @"youtube\.com/embed/([a-zA-Z0-9_-]{11})");
+                if (embedMatch.Success)
+                {
+                    videoId = embedMatch.Groups[1].Value;
+                }
+            }
+
+            // If video ID was found, construct clean URL
+            if (!string.IsNullOrEmpty(videoId))
+            {
+                return $"https://www.youtube.com/watch?v={videoId}";
+            }
+
+            // If no pattern matched, return original URL (might be valid as-is)
+            return url;
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
