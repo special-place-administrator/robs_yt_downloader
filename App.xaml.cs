@@ -30,7 +30,9 @@ namespace RobsYTDownloader
                 }
             }
 
-            // Continue with normal startup (MainWindow will be shown automatically via StartupUri in App.xaml)
+            // Show the main window
+            var mainWindow = new MainWindow();
+            mainWindow.Show();
         }
 
         private bool NeedsFirstTimeSetup()
