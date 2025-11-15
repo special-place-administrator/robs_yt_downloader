@@ -1,0 +1,8 @@
+{
+  "GoogleOAuth": {
+    "ClientId": "YOUR_GOOGLE_CLIENT_ID_HERE",
+    "ClientSecret": "YOUR_GOOGLE_CLIENT_SECRET_HERE",
+    "RedirectUri": "http://localhost:8080/",
+    "Scope": "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/userinfo.email"
+  }
+}

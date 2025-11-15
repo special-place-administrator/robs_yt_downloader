@@ -1,0 +1,234 @@
+<Window x:Class="RobsYTDownloader.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        Title="Settings"
+        Height="600"
+        Width="700"
+        MinHeight="500"
+        MinWidth="600"
+        WindowStartupLocation="CenterOwner"
+        Loaded="Window_Loaded">
+
+    <Window.Resources>
+        <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="ui:ControlHelper.CornerRadius" Value="4"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0"
+                   Text="Settings"
+                   FontSize="24"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,20"/>
+
+        <!-- Tab Control -->
+        <TabControl Grid.Row="1" Margin="0,0,0,20">
+            <!-- Dependencies Tab -->
+            <TabItem Header="Dependencies">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
+                        <TextBlock Text="Required Tools"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,15"/>
+
+                        <TextBlock Text="The following tools are required for downloading videos. Click 'Check All' to verify installations or 'Install' to download missing tools."
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,15"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+
+                        <Button x:Name="CheckAllButton"
+                                Content="Check All Dependencies"
+                                Click="CheckAllButton_Click"
+                                Margin="0,0,0,20"/>
+
+                        <!-- Dependency List -->
+                        <ItemsControl x:Name="DependenciesListView" Margin="0,0,0,10">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                                            BorderThickness="0,0,0,1"
+                                            Padding="0,10"
+                                            Margin="0,5">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="150"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Status Icon -->
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding StatusIcon}"
+                                                       FontSize="20"
+                                                       Margin="0,0,15,0"
+                                                       VerticalAlignment="Center"/>
+
+                                            <!-- Tool Name -->
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Name}"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center"/>
+
+                                            <!-- Status Text -->
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding StatusText}"
+                                                       FontSize="13"
+                                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                       VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"/>
+
+                                            <!-- Install Button -->
+                                            <Button Grid.Column="3"
+                                                    Content="{Binding ButtonText}"
+                                                    IsEnabled="{Binding CanInstall}"
+                                                    Click="InstallButton_Click"
+                                                    Tag="{Binding Name}"
+                                                    MinWidth="90"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- YouTube Login Tab -->
+            <TabItem Header="YouTube Login">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
+                        <TextBlock Text="YouTube Authentication"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Login with your Google account to access age-restricted videos and member-only content."
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,20"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+
+                        <!-- Not Logged In State -->
+                        <StackPanel x:Name="NotLoggedInPanel" Visibility="Visible">
+                            <Button x:Name="LoginButton"
+                                    Content="Login with Google"
+                                    Click="LoginButton_Click"
+                                    HorizontalAlignment="Left"
+                                    MinWidth="150"/>
+                        </StackPanel>
+
+                        <!-- Logged In State -->
+                        <StackPanel x:Name="LoggedInPanel" Visibility="Collapsed">
+                            <Border Background="{DynamicResource SystemControlBackgroundListLowBrush}"
+                                    CornerRadius="8"
+                                    Padding="15"
+                                    Margin="0,0,0,15">
+                                <StackPanel>
+                                    <TextBlock Text="Logged in as:"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               Margin="0,0,0,5"/>
+                                    <TextBlock x:Name="UserEmailText"
+                                               Text="user@example.com"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Button x:Name="LogoutButton"
+                                    Content="Logout"
+                                    Click="LogoutButton_Click"
+                                    HorizontalAlignment="Left"
+                                    MinWidth="100"/>
+                        </StackPanel>
+
+                        <!-- Status Message -->
+                        <TextBlock x:Name="AuthStatusText"
+                                   Text=""
+                                   Margin="0,15,0,0"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- General Settings Tab -->
+            <TabItem Header="General">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
+                        <TextBlock Text="General Settings"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,15"/>
+
+                        <!-- Download Folder -->
+                        <TextBlock Text="Default Download Folder:"
+                                   Margin="0,0,0,5"/>
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox x:Name="DownloadFolderTextBox"
+                                     Grid.Column="0"
+                                     IsReadOnly="True"
+                                     VerticalContentAlignment="Center"
+                                     Height="36"/>
+
+                            <Button Grid.Column="1"
+                                    Content="Browse"
+                                    Margin="10,0,0,0"
+                                    Click="BrowseFolderButton_Click"
+                                    Height="36"/>
+                        </Grid>
+
+                        <!-- Max Connections -->
+                        <TextBlock Text="Download Connections (aria2c):"
+                                   Margin="0,0,0,5"/>
+                        <ComboBox x:Name="ConnectionsComboBox"
+                                  SelectedIndex="3"
+                                  Margin="0,0,0,20"
+                                  HorizontalAlignment="Left"
+                                  MinWidth="150"
+                                  SelectionChanged="ConnectionsComboBox_SelectionChanged">
+                            <ComboBoxItem Content="4"/>
+                            <ComboBoxItem Content="8"/>
+                            <ComboBoxItem Content="12"/>
+                            <ComboBoxItem Content="16"/>
+                            <ComboBoxItem Content="20"/>
+                        </ComboBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- Bottom Buttons -->
+        <Grid Grid.Row="2">
+            <TextBlock Text="Settings are saved automatically"
+                       FontSize="12"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Left"/>
+
+            <Button Content="Close"
+                    Click="CloseButton_Click"
+                    MinWidth="100"
+                    HorizontalAlignment="Right"
+                    Style="{StaticResource AccentButtonStyle}"/>
+        </Grid>
+    </Grid>
+</Window>
