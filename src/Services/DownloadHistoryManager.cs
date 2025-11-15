@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RobsYTDownloader.Models;
 
@@ -27,7 +28,8 @@ namespace RobsYTDownloader.Services
         public void AddDownload(DownloadHistoryItem item)
         {
             _history.Add(item);
-            SaveHistory();
+            // Save asynchronously to avoid blocking UI thread
+            _ = SaveHistoryAsync();
         }
 
         public void UpdateDownload(DownloadHistoryItem item)
@@ -38,20 +40,23 @@ namespace RobsYTDownloader.Services
                 existing.Status = item.Status;
                 existing.ErrorMessage = item.ErrorMessage;
                 existing.FileSize = item.FileSize;
-                SaveHistory();
+                // Save asynchronously to avoid blocking UI thread
+                _ = SaveHistoryAsync();
             }
         }
 
         public void RemoveDownload(DownloadHistoryItem item)
         {
             _history.Remove(item);
-            SaveHistory();
+            // Save asynchronously to avoid blocking UI thread
+            _ = SaveHistoryAsync();
         }
 
         public void ClearHistory()
         {
             _history.Clear();
-            SaveHistory();
+            // Save asynchronously to avoid blocking UI thread
+            _ = SaveHistoryAsync();
         }
 
         private List<DownloadHistoryItem> LoadHistory()
@@ -72,12 +77,15 @@ namespace RobsYTDownloader.Services
             return new List<DownloadHistoryItem>();
         }
 
-        private void SaveHistory()
+        private async Task SaveHistoryAsync()
         {
             try
             {
-                var json = JsonConvert.SerializeObject(_history, Formatting.Indented);
-                File.WriteAllText(_historyFilePath, json);
+                // Serialize on thread pool to avoid blocking
+                var json = await Task.Run(() => JsonConvert.SerializeObject(_history, Formatting.Indented));
+
+                // Write file asynchronously
+                await File.WriteAllTextAsync(_historyFilePath, json);
             }
             catch (Exception ex)
             {
