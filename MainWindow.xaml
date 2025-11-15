@@ -5,7 +5,7 @@
         xmlns:converters="clr-namespace:RobsYTDownloader.Converters"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
-        Title="Rob's YouTube Downloader - v1.2.1"
+        Title="Rob's YouTube Downloader - v1.2.2"
         Height="700"
         Width="950"
         MinHeight="600"
@@ -18,19 +18,86 @@
         <!-- Converters -->
         <converters:DownloadStatusToVisibilityConverter x:Key="DownloadStatusToVisibilityConverter"/>
 
-        <!-- Styles -->
+        <!-- Consistent Design System Styles -->
+
+        <!-- Primary Controls (46px height) - Main actions -->
         <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Height" Value="46"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="ui:ControlHelper.CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
+            <Setter Property="Height" Value="46"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="ui:ControlHelper.CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <Style TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
+            <Setter Property="Height" Value="46"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="ui:ControlHelper.CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <!-- ToggleButton Style (40px height) - Filters -->
+        <Style TargetType="ToggleButton" BasedOn="{StaticResource DefaultToggleButtonStyle}">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="ui:ControlHelper.CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="MinWidth" Value="80"/>
+        </Style>
+
+        <!-- DataGrid Style with Enhanced Visibility -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RowBackground" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"/>
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource SystemControlBackgroundListLowBrush}"/>
+            <Setter Property="GridLinesVisibility" Value="None"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="RowHeight" Value="48"/>
+            <Setter Property="ColumnHeaderHeight" Value="44"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <!-- DataGrid Column Header Style -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Height" Value="44"/>
+        </Style>
+
+        <!-- Small Action Button Style (32px) - DataGrid actions -->
+        <Style x:Key="SmallActionButton" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="MinWidth" Value="70"/>
+            <Setter Property="Padding" Value="10,0"/>
             <Setter Property="ui:ControlHelper.CornerRadius" Value="4"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
-        <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
-            <Setter Property="Padding" Value="12,10"/>
+
+        <!-- Secondary Button Style (40px) - Secondary actions -->
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Padding" Value="14,0"/>
             <Setter Property="ui:ControlHelper.CornerRadius" Value="6"/>
-        </Style>
-        <Style TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}">
-            <Setter Property="ui:ControlHelper.CornerRadius" Value="6"/>
-            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
         </Style>
     </Window.Resources>
 
@@ -101,12 +168,10 @@
             </StackPanel>
             <Button x:Name="SettingsButton"
                     HorizontalAlignment="Right"
-                    Width="44"
-                    Height="44"
+                    Width="46"
                     Click="SettingsButton_Click"
                     ToolTip="Settings"
-                    Style="{StaticResource DefaultButtonStyle}"
-                    ui:ControlHelper.CornerRadius="22">
+                    ui:ControlHelper.CornerRadius="23">
                 <ui:FontIcon Glyph="&#xE713;" FontSize="18"/>
             </Button>
         </Grid>
@@ -121,22 +186,19 @@
             <TextBox x:Name="UrlTextBox"
                      Grid.Column="0"
                      ui:ControlHelper.PlaceholderText="Paste YouTube URL here..."
-                     FontSize="15"
                      VerticalContentAlignment="Center"
-                     Height="46"
                      Margin="0,0,12,0"
                      TextChanged="UrlTextBox_TextChanged"/>
 
             <Button x:Name="FetchButton"
                     Grid.Column="1"
-                    Height="46"
-                    MinWidth="160"
+                    MinWidth="180"
                     Click="FetchButton_Click"
                     IsEnabled="False"
                     Style="{StaticResource AccentButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <ui:FontIcon Glyph="&#xE896;" FontSize="14" Margin="0,0,6,0"/>
-                    <TextBlock Text="Fetch Qualities" FontSize="13"/>
+                    <ui:FontIcon Glyph="&#xE896;" FontSize="16" Margin="0,0,8,0"/>
+                    <TextBlock Text="Fetch Qualities"/>
                 </StackPanel>
             </Button>
         </Grid>
@@ -162,8 +224,6 @@
             <ComboBox x:Name="QualityComboBox"
                       Grid.Column="1"
                       ui:ControlHelper.PlaceholderText="Select quality..."
-                      FontSize="14"
-                      Height="40"
                       IsEnabled="False"
                       SelectionChanged="QualityComboBox_SelectionChanged"
                       DisplayMemberPath="DisplayName"/>
@@ -176,53 +236,40 @@
                 <TextBlock Text="Filters:"
                            FontSize="13"
                            VerticalAlignment="Center"
-                           Margin="0,0,8,0"
+                           Margin="0,0,10,0"
                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
 
                 <ToggleButton x:Name="FilterAllToggle"
                               Content="All"
-                              Height="32"
-                              Padding="12,6"
-                              Margin="0,0,6,0"
-                              FontSize="12"
+                              Margin="0,0,8,0"
                               IsChecked="True"
                               Click="FilterToggle_Click"/>
 
                 <ToggleButton x:Name="FilterVideoAudioToggle"
                               Content="Video+Audio"
-                              Height="32"
-                              Padding="12,6"
-                              Margin="0,0,6,0"
-                              FontSize="12"
+                              Margin="0,0,8,0"
                               Click="FilterToggle_Click"/>
 
                 <ToggleButton x:Name="FilterVideoOnlyToggle"
                               Content="Video Only"
-                              Height="32"
-                              Padding="12,6"
-                              Margin="0,0,6,0"
-                              FontSize="12"
+                              Margin="0,0,8,0"
                               Click="FilterToggle_Click"/>
 
                 <ToggleButton x:Name="FilterAudioOnlyToggle"
                               Content="Audio Only"
-                              Height="32"
-                              Padding="12,6"
-                              FontSize="12"
                               Click="FilterToggle_Click"/>
             </StackPanel>
 
             <!-- Download Button -->
             <Button x:Name="DownloadButton"
                     Grid.Column="4"
-                    Height="40"
-                    MinWidth="140"
+                    MinWidth="160"
                     Click="DownloadButton_Click"
                     IsEnabled="False"
                     Style="{StaticResource AccentButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <ui:FontIcon Glyph="&#xE896;" FontSize="14" Margin="0,0,6,0"/>
-                    <TextBlock Text="Download" FontSize="13" FontWeight="SemiBold"/>
+                    <ui:FontIcon Glyph="&#xE896;" FontSize="16" Margin="0,0,8,0"/>
+                    <TextBlock Text="Download" FontWeight="SemiBold"/>
                 </StackPanel>
             </Button>
         </Grid>
@@ -300,14 +347,12 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button x:Name="OpenDownloadFolderButton"
                             Content="Open Folder"
-                            Height="32"
-                            Padding="12,6"
+                            Style="{StaticResource SecondaryButton}"
                             Margin="0,0,8,0"
                             Click="OpenDownloadFolderButton_Click"/>
                     <Button x:Name="ClearHistoryButton"
                             Content="Clear All"
-                            Height="32"
-                            Padding="12,6"
+                            Style="{StaticResource SecondaryButton}"
                             Click="ClearHistoryButton_Click"/>
                 </StackPanel>
             </Grid>
@@ -319,16 +364,6 @@
                     <Grid>
                         <!-- Download History DataGrid -->
                         <DataGrid x:Name="HistoryDataGrid"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  CanUserAddRows="False"
-                                  CanUserDeleteRows="False"
-                                  GridLinesVisibility="None"
-                                  HeadersVisibility="Column"
-                                  SelectionMode="Single"
-                                  Background="{DynamicResource SystemControlPageBackgroundAltHighBrush}"
-                                  BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                                  BorderThickness="1"
                                   ui:ControlHelper.CornerRadius="6">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*" MinWidth="200"/>
@@ -340,12 +375,12 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                <Button Content="Pause" Click="PauseButton_Click" Tag="{Binding}" Width="60" Height="28" Margin="0,0,4,0" Padding="8,4" FontSize="12" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Downloading}"/>
-                                                <Button Content="Cancel" Click="CancelButton_Click" Tag="{Binding}" Width="60" Height="28" Padding="8,4" FontSize="12" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Downloading|Queued|Paused}"/>
-                                                <Button Content="Resume" Click="ResumeButton_Click" Tag="{Binding}" Width="60" Height="28" Margin="0,0,4,0" Padding="8,4" FontSize="12" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Paused}"/>
-                                                <Button Content="Open" Click="OpenFileButton_Click" Tag="{Binding}" Width="55" Height="28" Margin="0,0,4,0" Padding="8,4" FontSize="12" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Completed}"/>
-                                                <Button Content="Folder" Click="ShowInFolderButton_Click" Tag="{Binding}" Width="55" Height="28" Margin="0,0,4,0" Padding="8,4" FontSize="12" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Completed}"/>
-                                                <Button Content="Delete" Click="DeleteFileButton_Click" Tag="{Binding}" Width="55" Height="28" Padding="8,4" FontSize="12" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Completed|Failed|Cancelled}"/>
+                                                <Button Content="Pause" Click="PauseButton_Click" Tag="{Binding}" Style="{StaticResource SmallActionButton}" Margin="0,0,4,0" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Downloading}"/>
+                                                <Button Content="Cancel" Click="CancelButton_Click" Tag="{Binding}" Style="{StaticResource SmallActionButton}" Margin="0,0,4,0" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Downloading|Queued|Paused}"/>
+                                                <Button Content="Resume" Click="ResumeButton_Click" Tag="{Binding}" Style="{StaticResource SmallActionButton}" Margin="0,0,4,0" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Paused}"/>
+                                                <Button Content="Open" Click="OpenFileButton_Click" Tag="{Binding}" Style="{StaticResource SmallActionButton}" Margin="0,0,4,0" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Completed}"/>
+                                                <Button Content="Folder" Click="ShowInFolderButton_Click" Tag="{Binding}" Style="{StaticResource SmallActionButton}" Margin="0,0,4,0" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Completed}"/>
+                                                <Button Content="Delete" Click="DeleteFileButton_Click" Tag="{Binding}" Style="{StaticResource SmallActionButton}" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Completed|Failed|Cancelled}"/>
                                             </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
@@ -366,16 +401,6 @@
                     <Grid>
                         <!-- Video Link History DataGrid -->
                         <DataGrid x:Name="VideoLinkHistoryDataGrid"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  CanUserAddRows="False"
-                                  CanUserDeleteRows="False"
-                                  GridLinesVisibility="None"
-                                  HeadersVisibility="Column"
-                                  SelectionMode="Single"
-                                  Background="{DynamicResource SystemControlPageBackgroundAltHighBrush}"
-                                  BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                                  BorderThickness="1"
                                   ui:ControlHelper.CornerRadius="6">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Date" Binding="{Binding FetchDateFormatted}" Width="140"/>
@@ -384,16 +409,16 @@
                                 <DataGridTemplateColumn Header="Link" Width="80">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="Use" Click="UseVideoLinkButton_Click" Tag="{Binding}" Width="60" Height="28" Padding="8,4" FontSize="12" Style="{StaticResource AccentButtonStyle}"/>
+                                            <Button Content="Use" Click="UseVideoLinkButton_Click" Tag="{Binding}" Style="{StaticResource SmallActionButton}"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Actions" Width="140">
+                                <DataGridTemplateColumn Header="Actions" Width="160">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                                <Button Content="Copy" Click="CopyVideoLinkButton_Click" Tag="{Binding}" Width="60" Height="28" Margin="0,0,4,0" Padding="8,4" FontSize="12"/>
-                                                <Button Content="Remove" Click="RemoveVideoLinkButton_Click" Tag="{Binding}" Width="70" Height="28" Padding="8,4" FontSize="12"/>
+                                                <Button Content="Copy" Click="CopyVideoLinkButton_Click" Tag="{Binding}" Style="{StaticResource SmallActionButton}" Margin="0,0,4,0"/>
+                                                <Button Content="Remove" Click="RemoveVideoLinkButton_Click" Tag="{Binding}" Style="{StaticResource SmallActionButton}"/>
                                             </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>

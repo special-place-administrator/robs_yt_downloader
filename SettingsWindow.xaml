@@ -12,9 +12,29 @@
         Loaded="Window_Loaded">
 
     <Window.Resources>
+        <!-- Consistent Design System Styles -->
         <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="ui:ControlHelper.CornerRadius" Value="4"/>
+            <Setter Property="Height" Value="46"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="ui:ControlHelper.CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
+            <Setter Property="Height" Value="46"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="ui:ControlHelper.CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <!-- Secondary Button Style (40px) -->
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="ui:ControlHelper.CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
         </Style>
     </Window.Resources>
 
@@ -186,14 +206,12 @@
                             <TextBox x:Name="DownloadFolderTextBox"
                                      Grid.Column="0"
                                      IsReadOnly="True"
-                                     VerticalContentAlignment="Center"
-                                     Height="36"/>
+                                     VerticalContentAlignment="Center"/>
 
                             <Button Grid.Column="1"
                                     Content="Browse"
                                     Margin="10,0,0,0"
-                                    Click="BrowseFolderButton_Click"
-                                    Height="36"/>
+                                    Click="BrowseFolderButton_Click"/>
                         </Grid>
 
                         <!-- Max Connections -->
@@ -267,8 +285,7 @@
                                             Grid.Column="0"
                                             Content="Export Settings"
                                             Click="ExportButton_Click"
-                                            MinWidth="140"
-                                            Height="36"/>
+                                            MinWidth="160"/>
 
                                     <TextBlock x:Name="ExportSizeText"
                                                Grid.Column="1"
@@ -323,8 +340,7 @@
                                 <Button x:Name="ImportButton"
                                         Content="Import Settings"
                                         Click="ImportButton_Click"
-                                        MinWidth="140"
-                                        Height="36"/>
+                                        MinWidth="160"/>
                             </StackPanel>
                         </Border>
 
