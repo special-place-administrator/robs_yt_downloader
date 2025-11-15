@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6.0 or later: https://jrsoftware.org/isinfo.php
 
 #define MyAppName "Rob's YouTube Downloader"
-#define MyAppVersion "1.0.6"
+#define MyAppVersion "1.0.7"
 #define MyAppPublisher "Rob's Software"
 #define MyAppURL "https://github.com/special-place-administrator/robs_yt_downloader"
 #define MyAppExeName "RobsYTDownloader.exe"

@@ -16,6 +16,7 @@ namespace RobsYTDownloader
     public partial class MainWindow : Window
     {
         private readonly DownloadManager _downloadManager;
+        private readonly DownloadQueueManager _queueManager;
         private readonly ConfigManager _configManager;
         private readonly DownloadHistoryManager _historyManager;
         private VideoInfo? _currentVideo;
@@ -25,14 +26,18 @@ namespace RobsYTDownloader
         {
             InitializeComponent();
             _downloadManager = new DownloadManager();
+            _queueManager = new DownloadQueueManager();
             _configManager = new ConfigManager();
             _historyManager = new DownloadHistoryManager();
 
             _downloadManager.ProgressChanged += OnProgressChanged;
             _downloadManager.StatusChanged += OnStatusChanged;
 
+            // Bind history table to queue
+            HistoryDataGrid.ItemsSource = _queueManager.Queue;
+
             LoadConfig();
-            RefreshHistory();
+            LoadHistoricalDownloads();
         }
 
         private void LoadConfig()
@@ -48,13 +53,32 @@ namespace RobsYTDownloader
             Topmost = false;
         }
 
+        private void LoadHistoricalDownloads()
+        {
+            // Load completed downloads from history into the queue view
+            var history = _historyManager.GetHistory();
+            foreach (var item in history)
+            {
+                // Only show completed/failed downloads from history, not active ones
+                if (item.DownloadStatus == DownloadStatus.Completed || item.DownloadStatus == DownloadStatus.Failed)
+                {
+                    _queueManager.Queue.Add(item);
+                }
+            }
+
+            UpdateEmptyState();
+        }
+
         private void RefreshHistory()
         {
-            var history = _historyManager.GetHistory();
-            HistoryDataGrid.ItemsSource = history;
+            // Queue updates automatically via ObservableCollection
+            UpdateEmptyState();
+        }
 
+        private void UpdateEmptyState()
+        {
             // Show/hide empty state
-            if (history.Count == 0)
+            if (_queueManager.Queue.Count == 0)
             {
                 EmptyHistoryPanel.Visibility = Visibility.Visible;
                 HistoryDataGrid.Visibility = Visibility.Collapsed;
@@ -214,7 +238,7 @@ namespace RobsYTDownloader
             LoadingSpinner.IsActive = false;
         }
 
-        private async void DownloadButton_Click(object sender, RoutedEventArgs e)
+        private void DownloadButton_Click(object sender, RoutedEventArgs e)
         {
             var url = UrlTextBox.Text.Trim();
 
@@ -239,8 +263,6 @@ namespace RobsYTDownloader
                 ShowNotification("Please fetch video information first.", NotificationSeverity.Warning);
                 return;
             }
-
-            string outputPath = string.Empty;
 
             try
             {
@@ -273,7 +295,7 @@ namespace RobsYTDownloader
 
                 // Generate filename: "VideoTitle [Resolution].ext"
                 var fileName = $"{sanitizedTitle} [{selectedFormat.Resolution}].{extension}";
-                outputPath = Path.Combine(downloadFolder, fileName);
+                var outputPath = Path.Combine(downloadFolder, fileName);
 
                 // Check if file already exists and append number if needed
                 var counter = 1;
@@ -284,71 +306,32 @@ namespace RobsYTDownloader
                     counter++;
                 }
 
-                // Create history item
-                var historyItem = new DownloadHistoryItem
+                // Create download item and add to queue
+                var downloadItem = new DownloadHistoryItem
                 {
                     Url = sanitizedUrl,
                     Title = _currentVideo.Title,
                     Quality = selectedFormat.DisplayName,
+                    FormatId = selectedFormat.FormatId,
                     FilePath = outputPath,
                     DownloadDate = DateTime.Now,
-                    Status = "In Progress"
+                    DownloadStatus = DownloadStatus.Queued
                 };
 
-                _historyManager.AddDownload(historyItem);
-                RefreshHistory();
+                // Add to queue - it will start automatically
+                _queueManager.AddToQueue(downloadItem);
 
-                ShowLoading("Starting download...");
-                DownloadButton.IsEnabled = false;
-                FetchButton.IsEnabled = false;
-                UrlTextBox.IsEnabled = false;
-                QualityComboBox.IsEnabled = false;
+                // Also save to history manager for persistence
+                _historyManager.AddDownload(downloadItem);
 
-                // Run on background thread to prevent UI freeze
-                await Task.Run(async () => await _downloadManager.DownloadVideo(sanitizedUrl, selectedFormat.FormatId, outputPath)).ConfigureAwait(true);
-
-                HideLoading();
-
-                // Update history item
-                historyItem.Status = "Completed";
-                if (File.Exists(outputPath))
-                {
-                    historyItem.FileSize = new FileInfo(outputPath).Length;
-                }
-                _historyManager.UpdateDownload(historyItem);
-                RefreshHistory();
-
-                ShowNotification($"Download completed successfully!\n\nSaved to: {Path.GetFileName(outputPath)}", NotificationSeverity.Success);
-                StatusText.Text = "Download completed";
-                DownloadProgress.Value = 0;
-                ProgressText.Text = "";
+                UpdateEmptyState();
+                ShowNotification($"Added to download queue: {_currentVideo.Title}", NotificationSeverity.Success);
+                StatusText.Text = $"Added to queue - {_queueManager.Queue.Count(i => i.DownloadStatus == DownloadStatus.Queued || i.DownloadStatus == DownloadStatus.Downloading)} active download(s)";
             }
             catch (Exception ex)
             {
-                HideLoading();
-
-                // Update history item as failed
-                if (!string.IsNullOrEmpty(outputPath))
-                {
-                    var failedItem = _historyManager.GetHistory().FirstOrDefault(h => h.FilePath == outputPath);
-                    if (failedItem != null)
-                    {
-                        failedItem.Status = "Failed";
-                        failedItem.ErrorMessage = ex.Message;
-                        _historyManager.UpdateDownload(failedItem);
-                        RefreshHistory();
-                    }
-                }
-
-                ShowNotification($"Download failed: {ex.Message}", NotificationSeverity.Error);
-                StatusText.Text = "Download failed";
-            }
-            finally
-            {
-                DownloadButton.IsEnabled = true;
-                FetchButton.IsEnabled = true;
-                UrlTextBox.IsEnabled = true;
-                QualityComboBox.IsEnabled = true;
+                ShowNotification($"Failed to add to queue: {ex.Message}", NotificationSeverity.Error);
+                StatusText.Text = "Failed to add to queue";
             }
         }
 
@@ -521,14 +504,60 @@ namespace RobsYTDownloader
                             File.Delete(item.FilePath);
                         }
 
+                        _queueManager.RemoveDownload(item.Id);
                         _historyManager.RemoveDownload(item);
-                        RefreshHistory();
+                        UpdateEmptyState();
                         ShowNotification("File deleted successfully.", NotificationSeverity.Success);
                     }
                     catch (Exception ex)
                     {
                         ShowNotification($"Failed to delete file: {ex.Message}", NotificationSeverity.Error);
                     }
+                }
+            }
+        }
+
+        private void PauseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as System.Windows.Controls.Button;
+            var item = button?.Tag as DownloadHistoryItem;
+
+            if (item != null)
+            {
+                _queueManager.PauseDownload(item.Id);
+                ShowNotification($"Paused: {item.Title}", NotificationSeverity.Information);
+            }
+        }
+
+        private void ResumeButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as System.Windows.Controls.Button;
+            var item = button?.Tag as DownloadHistoryItem;
+
+            if (item != null)
+            {
+                _queueManager.ResumeDownload(item.Id);
+                ShowNotification($"Resumed: {item.Title}", NotificationSeverity.Information);
+            }
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as System.Windows.Controls.Button;
+            var item = button?.Tag as DownloadHistoryItem;
+
+            if (item != null)
+            {
+                var result = System.Windows.MessageBox.Show(
+                    $"Are you sure you want to cancel this download?\n\n{item.Title}",
+                    "Confirm Cancel",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    _queueManager.CancelDownload(item.Id);
+                    ShowNotification($"Cancelled: {item.Title}", NotificationSeverity.Information);
                 }
             }
         }
