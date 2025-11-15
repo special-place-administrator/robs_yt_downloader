@@ -88,8 +88,13 @@ namespace RobsYTDownloader
                     }
                 };
 
-                // Save to oauth_config.json
-                var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "oauth_config.json");
+                // Save to AppData (not Program Files - no admin needed)
+                var appDataPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "RobsYTDownloader");
+
+                Directory.CreateDirectory(appDataPath);
+                var configPath = Path.Combine(appDataPath, "oauth_config.json");
                 File.WriteAllText(configPath, config.ToString(Newtonsoft.Json.Formatting.Indented));
 
                 SetupCompleted = true;
@@ -114,47 +119,40 @@ namespace RobsYTDownloader
 
         private void SkipButton_Click(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(
-                "Are you sure you want to skip the OAuth setup?\n\n" +
-                "Without OAuth configuration, you will not be able to:\n" +
-                "• Download high-quality videos (4K/8K)\n" +
-                "• Access members-only content\n" +
-                "• Download age-restricted videos\n\n" +
-                "You can always configure OAuth later in Settings.",
-                "Skip OAuth Setup",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            // Just skip - no confirmation needed
+            try
             {
-                // Create a minimal config file with template values
-                try
+                // Create a minimal config file in AppData with skip marker
+                var appDataPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "RobsYTDownloader");
+
+                Directory.CreateDirectory(appDataPath);
+
+                var config = new JObject
                 {
-                    var config = new JObject
+                    ["GoogleOAuth"] = new JObject
                     {
-                        ["GoogleOAuth"] = new JObject
-                        {
-                            ["ClientId"] = "SKIP_SETUP_NOT_CONFIGURED",
-                            ["ClientSecret"] = "SKIP_SETUP_NOT_CONFIGURED",
-                            ["RedirectUri"] = "http://localhost:8080/",
-                            ["Scope"] = "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/userinfo.email"
-                        }
-                    };
+                        ["ClientId"] = "SKIP_SETUP_NOT_CONFIGURED",
+                        ["ClientSecret"] = "SKIP_SETUP_NOT_CONFIGURED",
+                        ["RedirectUri"] = "http://localhost:8080/",
+                        ["Scope"] = "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/userinfo.email"
+                    }
+                };
 
-                    var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "oauth_config.json");
-                    File.WriteAllText(configPath, config.ToString(Newtonsoft.Json.Formatting.Indented));
+                var configPath = Path.Combine(appDataPath, "oauth_config.json");
+                File.WriteAllText(configPath, config.ToString(Newtonsoft.Json.Formatting.Indented));
 
-                    SetupCompleted = true;
-                    Close();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(
-                        $"Error creating configuration file:\n\n{ex.Message}",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
+                SetupCompleted = true;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Error creating configuration file:\n\n{ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 

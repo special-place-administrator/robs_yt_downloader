@@ -37,9 +37,13 @@ namespace RobsYTDownloader
         {
             try
             {
-                var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "oauth_config.json");
+                // Check AppData first (preferred location)
+                var appDataPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "RobsYTDownloader");
+                var configPath = Path.Combine(appDataPath, "oauth_config.json");
 
-                // If file doesn't exist, needs setup
+                // If file doesn't exist in AppData, needs setup
                 if (!File.Exists(configPath))
                 {
                     return true;
@@ -56,10 +60,15 @@ namespace RobsYTDownloader
                 if (string.IsNullOrWhiteSpace(clientId) ||
                     string.IsNullOrWhiteSpace(clientSecret) ||
                     clientId.Contains("YOUR_") ||
-                    clientSecret.Contains("YOUR_") ||
-                    clientId == "SKIP_SETUP_NOT_CONFIGURED")
+                    clientSecret.Contains("YOUR_"))
                 {
                     return true;
+                }
+
+                // Allow skipped setup - don't force setup again
+                if (clientId == "SKIP_SETUP_NOT_CONFIGURED")
+                {
+                    return false; // Already skipped, don't show again
                 }
 
                 return false;
