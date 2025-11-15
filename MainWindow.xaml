@@ -5,7 +5,7 @@
         xmlns:converters="clr-namespace:RobsYTDownloader.Converters"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
-        Title="Rob's YouTube Downloader - v1.2.2"
+        Title="Rob's YouTube Downloader - v1.2.3"
         Height="700"
         Width="950"
         MinHeight="600"
@@ -43,13 +43,20 @@
             <Setter Property="FontSize" Value="14"/>
         </Style>
 
-        <!-- ToggleButton Style (40px height) - Filters -->
+        <!-- ToggleButton Style (40px height) - Filters with Neutral Colors -->
         <Style TargetType="ToggleButton" BasedOn="{StaticResource DefaultToggleButtonStyle}">
             <Setter Property="Height" Value="40"/>
             <Setter Property="Padding" Value="14,8"/>
             <Setter Property="ui:ControlHelper.CornerRadius" Value="6"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="MinWidth" Value="80"/>
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseMediumBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <!-- DataGrid Style with Enhanced Visibility -->
@@ -69,6 +76,32 @@
             <Setter Property="RowHeight" Value="48"/>
             <Setter Property="ColumnHeaderHeight" Value="44"/>
             <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <!-- DataGrid Row Style - Neutral Selection Color -->
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundListMediumBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- DataGrid Cell Style - Remove Blue Selection -->
+        <Style TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <!-- DataGrid Column Header Style -->
@@ -194,8 +227,7 @@
                     Grid.Column="1"
                     MinWidth="180"
                     Click="FetchButton_Click"
-                    IsEnabled="False"
-                    Style="{StaticResource AccentButtonStyle}">
+                    IsEnabled="False">
                 <StackPanel Orientation="Horizontal">
                     <ui:FontIcon Glyph="&#xE896;" FontSize="16" Margin="0,0,8,0"/>
                     <TextBlock Text="Fetch Qualities"/>
@@ -206,37 +238,29 @@
         <!-- Quality Selection with Filters and Download Button -->
         <Grid Grid.Row="3" Margin="30,0,30,15">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="300"/>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Quality Label and Dropdown -->
-            <TextBlock Grid.Column="0"
-                       Text="Quality:"
-                       FontSize="14"
-                       FontWeight="SemiBold"
-                       VerticalAlignment="Center"
-                       Margin="0,0,12,0"/>
+            <!-- Quality Dropdown and Filters - Left Side -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Quality:"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0"/>
 
-            <ComboBox x:Name="QualityComboBox"
-                      Grid.Column="1"
-                      ui:ControlHelper.PlaceholderText="Select quality..."
-                      IsEnabled="False"
-                      SelectionChanged="QualityComboBox_SelectionChanged"
-                      DisplayMemberPath="DisplayName"/>
+                <ComboBox x:Name="QualityComboBox"
+                          Width="300"
+                          ui:ControlHelper.PlaceholderText="Select quality..."
+                          IsEnabled="False"
+                          SelectionChanged="QualityComboBox_SelectionChanged"
+                          DisplayMemberPath="DisplayName"/>
 
-            <!-- Filter Toggle Buttons (Hugging Quality Dropdown) -->
-            <StackPanel Grid.Column="2"
-                        Orientation="Horizontal"
-                        Margin="12,0,0,0"
-                        VerticalAlignment="Center">
                 <TextBlock Text="Filters:"
                            FontSize="13"
                            VerticalAlignment="Center"
-                           Margin="0,0,10,0"
+                           Margin="16,0,10,0"
                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
 
                 <ToggleButton x:Name="FilterAllToggle"
@@ -260,13 +284,12 @@
                               Click="FilterToggle_Click"/>
             </StackPanel>
 
-            <!-- Download Button -->
+            <!-- Download Button - Right Side -->
             <Button x:Name="DownloadButton"
-                    Grid.Column="4"
+                    Grid.Column="1"
                     MinWidth="160"
                     Click="DownloadButton_Click"
-                    IsEnabled="False"
-                    Style="{StaticResource AccentButtonStyle}">
+                    IsEnabled="False">
                 <StackPanel Orientation="Horizontal">
                     <ui:FontIcon Glyph="&#xE896;" FontSize="16" Margin="0,0,8,0"/>
                     <TextBlock Text="Download" FontWeight="SemiBold"/>
