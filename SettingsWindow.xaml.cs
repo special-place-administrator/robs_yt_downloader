@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,6 +14,7 @@ namespace RobsYTDownloader
         private readonly DependencyManager _dependencyManager;
         private readonly GoogleAuthService _authService;
         private readonly ConfigManager _configManager;
+        private readonly SettingsExportService _exportService;
         private List<DependencyStatus> _dependencies = new();
 
         public SettingsWindow()
@@ -21,6 +23,7 @@ namespace RobsYTDownloader
             _dependencyManager = new DependencyManager();
             _authService = GoogleAuthService.Instance;
             _configManager = new ConfigManager();
+            _exportService = new SettingsExportService();
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -28,6 +31,7 @@ namespace RobsYTDownloader
             LoadSettings();
             await CheckDependencies();
             UpdateAuthUI();
+            UpdateExportSize();
         }
 
         private void LoadSettings()
@@ -203,6 +207,179 @@ namespace RobsYTDownloader
             // Save settings one final time when closing
             AutoSaveSettings();
             base.OnClosing(e);
+        }
+
+        // Export/Import functionality
+
+        private async void ExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ExportButton.IsEnabled = false;
+                BackupStatusText.Text = "Preparing export...";
+                BackupStatusText.Foreground = System.Windows.Media.Brushes.Gray;
+
+                // Show save file dialog
+                var dialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    FileName = $"RobsYTDownloader_Settings_{DateTime.Now:yyyyMMdd_HHmmss}",
+                    DefaultExt = ".zip",
+                    Filter = "Settings Backup (*.zip)|*.zip"
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    var result = await _exportService.ExportSettings(dialog.FileName);
+
+                    if (result.Success)
+                    {
+                        BackupStatusText.Text = $"✓ {result.Message}";
+                        BackupStatusText.Foreground = System.Windows.Media.Brushes.Green;
+
+                        var openResult = MessageBox.Show(
+                            "Settings exported successfully!\n\nWould you like to open the folder containing the backup file?",
+                            "Export Successful",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Information);
+
+                        if (openResult == MessageBoxResult.Yes)
+                        {
+                            var folderPath = Path.GetDirectoryName(dialog.FileName);
+                            if (!string.IsNullOrEmpty(folderPath))
+                            {
+                                System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{dialog.FileName}\"");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        BackupStatusText.Text = $"✗ {result.Message}";
+                        BackupStatusText.Foreground = System.Windows.Media.Brushes.Red;
+                        MessageBox.Show(result.Message, "Export Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    BackupStatusText.Text = "Export cancelled.";
+                    BackupStatusText.Foreground = System.Windows.Media.Brushes.Gray;
+                }
+            }
+            catch (Exception ex)
+            {
+                BackupStatusText.Text = $"✗ Export error: {ex.Message}";
+                BackupStatusText.Foreground = System.Windows.Media.Brushes.Red;
+                MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                ExportButton.IsEnabled = true;
+            }
+        }
+
+        private async void ImportButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Show warning
+                var confirmResult = MessageBox.Show(
+                    "Import will replace your current settings with those from the backup file.\n\n" +
+                    "Your current settings will be automatically backed up before importing.\n\n" +
+                    "You will need to restart the application after importing.\n\n" +
+                    "Do you want to continue?",
+                    "Confirm Import",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (confirmResult != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+
+                // Show open file dialog
+                var dialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    DefaultExt = ".zip",
+                    Filter = "Settings Backup (*.zip)|*.zip"
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    ImportButton.IsEnabled = false;
+                    BackupStatusText.Text = "Importing settings...";
+                    BackupStatusText.Foreground = System.Windows.Media.Brushes.Gray;
+
+                    var result = await _exportService.ImportSettings(dialog.FileName);
+
+                    if (result.Success)
+                    {
+                        BackupStatusText.Text = $"✓ {result.Message}";
+                        BackupStatusText.Foreground = System.Windows.Media.Brushes.Green;
+
+                        MessageBox.Show(
+                            result.Message,
+                            "Import Successful",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+
+                        // Ask if user wants to restart now
+                        var restartResult = MessageBox.Show(
+                            "Would you like to close the application now to apply the imported settings?",
+                            "Restart Required",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question);
+
+                        if (restartResult == MessageBoxResult.Yes)
+                        {
+                            Application.Current.Shutdown();
+                        }
+                    }
+                    else
+                    {
+                        BackupStatusText.Text = $"✗ {result.Message}";
+                        BackupStatusText.Foreground = System.Windows.Media.Brushes.Red;
+                        MessageBox.Show(result.Message, "Import Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+
+                    ImportButton.IsEnabled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                BackupStatusText.Text = $"✗ Import error: {ex.Message}";
+                BackupStatusText.Foreground = System.Windows.Media.Brushes.Red;
+                MessageBox.Show($"Import failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ImportButton.IsEnabled = true;
+            }
+        }
+
+        private void UpdateExportSize()
+        {
+            try
+            {
+                var sizeBytes = _exportService.GetExportableDataSize();
+                var sizeKB = sizeBytes / 1024.0;
+
+                string sizeText;
+                if (sizeKB < 1)
+                {
+                    sizeText = $"Estimated size: {sizeBytes} bytes";
+                }
+                else if (sizeKB < 1024)
+                {
+                    sizeText = $"Estimated size: {sizeKB:F1} KB";
+                }
+                else
+                {
+                    var sizeMB = sizeKB / 1024.0;
+                    sizeText = $"Estimated size: {sizeMB:F2} MB";
+                }
+
+                ExportSizeText.Text = sizeText;
+            }
+            catch
+            {
+                ExportSizeText.Text = "Estimated size: Unknown";
+            }
         }
     }
 }

@@ -214,6 +214,129 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
+
+            <!-- Backup & Restore Tab -->
+            <TabItem Header="Backup &amp; Restore">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="10">
+                        <TextBlock Text="Backup &amp; Restore Settings"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Export and import your application settings, cookies, and download history to easily migrate to another computer or create backups."
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,25"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+
+                        <!-- Export Section -->
+                        <Border Background="{DynamicResource SystemControlBackgroundListLowBrush}"
+                                CornerRadius="8"
+                                Padding="20"
+                                Margin="0,0,0,20">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="📤"
+                                               FontSize="24"
+                                               Margin="0,0,10,0"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="Export Settings"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <TextBlock Text="Create a backup file containing:"
+                                           Margin="0,0,0,8"
+                                           FontSize="13"/>
+
+                                <StackPanel Margin="15,0,0,15">
+                                    <TextBlock Text="• Application settings (download folder, connections)" Margin="0,2"/>
+                                    <TextBlock Text="• YouTube login cookies" Margin="0,2"/>
+                                    <TextBlock Text="• Download history" Margin="0,2"/>
+                                    <TextBlock Text="• Google OAuth configuration" Margin="0,2"/>
+                                </StackPanel>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button x:Name="ExportButton"
+                                            Grid.Column="0"
+                                            Content="Export Settings"
+                                            Click="ExportButton_Click"
+                                            MinWidth="140"
+                                            Height="36"/>
+
+                                    <TextBlock x:Name="ExportSizeText"
+                                               Grid.Column="1"
+                                               Text="Estimated size: 0 KB"
+                                               VerticalAlignment="Center"
+                                               Margin="15,0,0,0"
+                                               FontSize="12"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Import Section -->
+                        <Border Background="{DynamicResource SystemControlBackgroundListLowBrush}"
+                                CornerRadius="8"
+                                Padding="20"
+                                Margin="0,0,0,20">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="📥"
+                                               FontSize="24"
+                                               Margin="0,0,10,0"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="Import Settings"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <TextBlock Text="Restore settings from a previously exported backup file. Your current settings will be backed up automatically before importing."
+                                           TextWrapping="Wrap"
+                                           Margin="0,0,0,15"
+                                           FontSize="13"/>
+
+                                <Border Background="{DynamicResource SystemControlBackgroundAccentBrush}"
+                                        BorderBrush="{DynamicResource SystemControlForegroundAccentBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="12"
+                                        Margin="0,0,0,15"
+                                        Opacity="0.15">
+                                    <StackPanel>
+                                        <TextBlock Text="⚠️ Important Notes:"
+                                                   FontWeight="SemiBold"
+                                                   Margin="0,0,0,5"/>
+                                        <TextBlock Text="• Current settings will be automatically backed up" Margin="0,2"/>
+                                        <TextBlock Text="• Application must be restarted after import" Margin="0,2"/>
+                                        <TextBlock Text="• Download history will be replaced" Margin="0,2"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Button x:Name="ImportButton"
+                                        Content="Import Settings"
+                                        Click="ImportButton_Click"
+                                        MinWidth="140"
+                                        Height="36"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Status Message -->
+                        <TextBlock x:Name="BackupStatusText"
+                                   Text=""
+                                   TextWrapping="Wrap"
+                                   Margin="0,10,0,0"
+                                   FontSize="13"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
         </TabControl>
 
         <!-- Bottom Buttons -->
