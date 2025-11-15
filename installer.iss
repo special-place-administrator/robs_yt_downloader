@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6.0 or later: https://jrsoftware.org/isinfo.php
 
 #define MyAppName "Rob's YouTube Downloader"
-#define MyAppVersion "1.0.8"
+#define MyAppVersion "1.0.9"
 #define MyAppPublisher "Rob's Software"
 #define MyAppURL "https://github.com/special-place-administrator/robs_yt_downloader"
 #define MyAppExeName "RobsYTDownloader.exe"
@@ -43,9 +43,9 @@ VersionInfoDescription={#MyAppName} Setup
 VersionInfoProductName={#MyAppName}
 VersionInfoProductVersion={#MyAppVersion}
 ; Close running app before upgrade
-CloseApplications=yes
+CloseApplications=force
 RestartApplications=no
-CloseApplicationsFilter=*.exe
+CloseApplicationsFilter={#MyAppExeName}
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
