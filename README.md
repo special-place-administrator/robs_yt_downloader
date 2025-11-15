@@ -1,16 +1,26 @@
 # Rob's YouTube Downloader
 
-A modern Windows 11-style YouTube downloader built with WPF (.NET 8.0) that supports downloading videos up to 8K HDR quality with Google OAuth authentication.
+A modern Windows 11-style YouTube downloader built with WPF (.NET 8.0) that supports downloading videos up to 8K HDR quality with Google OAuth authentication. Features a powerful concurrent download queue system with real-time progress tracking.
 
 ## Features
 
-- **Modern Windows 11 UI** - Fluent Design with Mica-like effects and acrylic blur
+### Download Management
+- **Download Queue System** (v1.0.7+) - Add multiple videos and download up to 3 simultaneously
+- **Real-Time Progress Tracking** - Live progress bars with speed, ETA, and percentage for each download
+- **Pause/Resume/Cancel** - Full control over individual downloads in the queue
+- **Non-Blocking UI** - Continue browsing and adding videos while downloads run in background
+- **Download History** - Track all your downloads with Open/Delete/Browse functionality
+
+### Video Quality & Authentication
 - **8K HDR Support** - Download videos up to 8K (7680x4320) with HDR support
 - **Google OAuth Login** - Seamless authentication for accessing premium formats and members-only content
+- **Format Filtering** - Filter by All/Video+Audio/Video Only/Audio Only formats
 - **WebView2 Auto-Installer** - Automatically downloads and installs WebView2 runtime if needed
-- **Download History** - Track all your downloads with Open/Delete/Browse functionality
+
+### Performance & UX
 - **Multi-Connection Downloads** - Uses aria2c for accelerated downloads with configurable connections (4-20)
-- **Format Selection** - Choose from all available video/audio quality options
+- **Responsive UI** (v1.0.8+) - Async operations prevent UI freezing
+- **Modern Windows 11 UI** - Fluent Design with Mica-like effects and acrylic blur
 - **In-App Notifications** - Toast-style notifications for status updates
 - **Auto-Save Settings** - Settings automatically saved as you change them
 
@@ -32,13 +42,18 @@ A modern Windows 11-style YouTube downloader built with WPF (.NET 8.0) that supp
 ### Option 1: Windows Installer (Recommended)
 
 1. Go to [Releases](https://github.com/special-place-administrator/robs_yt_downloader/releases)
-2. Download `RobsYTDownloader-Setup-v1.0.0.exe`
+2. Download the latest `RobsYTDownloader-Setup-v1.0.8.exe`
 3. Run the installer
    - Choose installation directory
    - Installer will check for .NET 8.0 and Node.js
    - Creates desktop icon (optional)
    - Adds to Start Menu
    - Sets up PATH environment variable
+
+**Latest Version:** v1.0.8
+- ✅ Download queue with concurrent downloads
+- ✅ Live progress tracking with pause/resume/cancel
+- ✅ Responsive UI with no freezing
 
 ### Option 2: Build from Source
 
@@ -70,7 +85,7 @@ dotnet publish --configuration Release
 iscc installer.iss
 ```
 
-The installer will be created in `installer_output\RobsYTDownloader-Setup-v1.0.0.exe`
+The installer will be created in `installer_output\RobsYTDownloader-Setup-v1.0.8.exe`
 
 ## Google OAuth Setup (Required for Login)
 
@@ -145,10 +160,13 @@ Before you can use the Google Login feature, you need to create your own Google 
 ### Downloading Videos
 
 1. **Paste YouTube URL** into the text box
-2. **Click Fetch** to load available formats
-3. **Select quality** from the dropdown (options include 8K HDR, 4K HDR, 1080p60, etc.)
-4. **Click Download** and choose save location
-5. **Monitor progress** with real-time speed and ETA updates
+2. **Click Fetch Qualities** to load available formats
+3. **Optional: Filter formats** - Select All/Video+Audio/Video Only/Audio Only
+4. **Select quality** from the dropdown (options include 8K HDR, 4K HDR, 1080p60, etc.)
+5. **Click Download** - Video is instantly added to the download queue
+6. **Repeat steps 1-5** to add more videos (up to 3 will download simultaneously)
+7. **Monitor progress** - Each download shows live speed, ETA, and progress percentage
+8. **Control downloads** - Use Pause/Resume/Cancel buttons for individual downloads
 
 ### Settings
 
@@ -157,12 +175,23 @@ Before you can use the Google Login feature, you need to create your own Google 
 - **Google Login** - Authenticate to access premium formats
 - **Dependencies** - Check status and install yt-dlp, aria2c, ffmpeg
 
-### Download History
+### Download Queue & History
 
-- View all previous downloads in the History tab
+The download history table serves as both a queue manager and history viewer:
+
+**Active Downloads (Queued/Downloading/Paused):**
+- Live progress updates showing `45.2% - 1.5MB/s - ETA: 02:30`
+- **Pause** - Temporarily pause an active download
+- **Resume** - Continue a paused download
+- **Cancel** - Cancel a queued or active download
+
+**Completed Downloads:**
 - **Open** - Launch downloaded file in default player
-- **Browse** - Open file location in Explorer
+- **Folder** - Open file location in Explorer
 - **Delete** - Remove file and clear from history
+
+**Failed/Cancelled Downloads:**
+- **Delete** - Clear from history
 
 ## Technical Details
 
@@ -203,15 +232,19 @@ Before you can use the Google Login feature, you need to create your own Google 
 6. Cookies are extracted from authenticated YouTube session
 7. Cookies saved in Netscape format for yt-dlp
 
-### Download Process
+### Download Process (Queue System)
 
-1. yt-dlp fetches video metadata using cookies
-2. Node.js runtime solves YouTube's n-signature challenges
-3. All available formats are displayed (including 8K HDR if available)
-4. User selects desired format
-5. aria2c downloads video/audio streams with multiple connections
-6. ffmpeg merges streams if necessary
-7. Download added to history with metadata
+1. User adds video to queue by clicking Download
+2. DownloadQueueManager manages up to 3 concurrent downloads using semaphore-based concurrency
+3. For each download:
+   - yt-dlp fetches video metadata using cookies
+   - Node.js runtime solves YouTube's n-signature challenges
+   - aria2c downloads video/audio streams with multiple connections
+   - ffmpeg merges streams if necessary (for Video+Audio formats)
+   - File validation ensures non-zero file size before marking complete
+4. Progress updates parsed from yt-dlp output and displayed in real-time
+5. Download state transitions: Queued → Downloading → Completed/Failed/Cancelled
+6. History saved asynchronously to prevent UI blocking
 
 ## Troubleshooting
 
