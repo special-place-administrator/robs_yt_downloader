@@ -87,7 +87,7 @@ namespace RobsYTDownloader.Services
                     var metadata = new
                     {
                         ExportDate = DateTime.Now,
-                        AppVersion = "1.2.0",
+                        AppVersion = "1.2.1",
                         ExportedFiles = exportedCount,
                         Note = "Rob's YouTube Downloader Settings Export"
                     };

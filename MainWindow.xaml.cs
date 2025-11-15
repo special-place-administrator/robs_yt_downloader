@@ -732,8 +732,7 @@ namespace RobsYTDownloader
                 VideoNameText.Text = $"{_baseVideoTitle} - {qualityInfo}";
                 VideoNameText.Foreground = Brushes.White;
 
-                // Show download button when quality selected
-                DownloadButton.Visibility = Visibility.Visible;
+                // Enable download button when quality selected
                 DownloadButton.IsEnabled = true;
             }
         }

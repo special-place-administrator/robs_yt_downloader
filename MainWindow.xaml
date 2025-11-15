@@ -5,7 +5,7 @@
         xmlns:converters="clr-namespace:RobsYTDownloader.Converters"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
-        Title="Rob's YouTube Downloader - v1.2.0"
+        Title="Rob's YouTube Downloader - v1.2.1"
         Height="700"
         Width="950"
         MinHeight="600"
@@ -111,22 +111,44 @@
             </Button>
         </Grid>
 
-        <!-- URL Input Section -->
+        <!-- URL Input Section with Fetch Button -->
         <Grid Grid.Row="2" Margin="30,0,30,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
             <TextBox x:Name="UrlTextBox"
+                     Grid.Column="0"
                      ui:ControlHelper.PlaceholderText="Paste YouTube URL here..."
                      FontSize="15"
                      VerticalContentAlignment="Center"
                      Height="46"
+                     Margin="0,0,12,0"
                      TextChanged="UrlTextBox_TextChanged"/>
+
+            <Button x:Name="FetchButton"
+                    Grid.Column="1"
+                    Height="46"
+                    MinWidth="160"
+                    Click="FetchButton_Click"
+                    IsEnabled="False"
+                    Style="{StaticResource AccentButtonStyle}">
+                <StackPanel Orientation="Horizontal">
+                    <ui:FontIcon Glyph="&#xE896;" FontSize="14" Margin="0,0,6,0"/>
+                    <TextBlock Text="Fetch Qualities" FontSize="13"/>
+                </StackPanel>
+            </Button>
         </Grid>
 
-        <!-- Quality Selection with Inline Filters -->
+        <!-- Quality Selection with Filters and Download Button -->
         <Grid Grid.Row="3" Margin="30,0,30,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <!-- Quality Label and Dropdown -->
@@ -146,15 +168,15 @@
                       SelectionChanged="QualityComboBox_SelectionChanged"
                       DisplayMemberPath="DisplayName"/>
 
-            <!-- Filter Toggle Buttons (Inline) -->
+            <!-- Filter Toggle Buttons (Hugging Quality Dropdown) -->
             <StackPanel Grid.Column="2"
                         Orientation="Horizontal"
-                        Margin="20,0,0,0"
+                        Margin="12,0,0,0"
                         VerticalAlignment="Center">
                 <TextBlock Text="Filters:"
                            FontSize="13"
                            VerticalAlignment="Center"
-                           Margin="0,0,10,0"
+                           Margin="0,0,8,0"
                            Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
 
                 <ToggleButton x:Name="FilterAllToggle"
@@ -189,15 +211,27 @@
                               FontSize="12"
                               Click="FilterToggle_Click"/>
             </StackPanel>
+
+            <!-- Download Button -->
+            <Button x:Name="DownloadButton"
+                    Grid.Column="4"
+                    Height="40"
+                    MinWidth="140"
+                    Click="DownloadButton_Click"
+                    IsEnabled="False"
+                    Style="{StaticResource AccentButtonStyle}">
+                <StackPanel Orientation="Horizontal">
+                    <ui:FontIcon Glyph="&#xE896;" FontSize="14" Margin="0,0,6,0"/>
+                    <TextBlock Text="Download" FontSize="13" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Button>
         </Grid>
 
-        <!-- Video Name Display with Action Buttons -->
-        <Grid Grid.Row="4" Margin="30,0,30,20">
+        <!-- Video Name Display -->
+        <Grid Grid.Row="4" Margin="30,0,30,15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <TextBlock Grid.Column="0"
@@ -214,34 +248,6 @@
                        VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis"
                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-
-            <Button x:Name="FetchButton"
-                    Grid.Column="2"
-                    Margin="12,0,12,0"
-                    Height="40"
-                    MinWidth="140"
-                    Click="FetchButton_Click"
-                    IsEnabled="False"
-                    Style="{StaticResource AccentButtonStyle}">
-                <StackPanel Orientation="Horizontal">
-                    <ui:FontIcon Glyph="&#xE896;" FontSize="14" Margin="0,0,6,0"/>
-                    <TextBlock Text="Fetch Qualities" FontSize="13"/>
-                </StackPanel>
-            </Button>
-
-            <Button x:Name="DownloadButton"
-                    Grid.Column="3"
-                    Height="40"
-                    MinWidth="120"
-                    Click="DownloadButton_Click"
-                    IsEnabled="False"
-                    Visibility="Collapsed"
-                    Style="{StaticResource AccentButtonStyle}">
-                <StackPanel Orientation="Horizontal">
-                    <ui:FontIcon Glyph="&#xE896;" FontSize="14" Margin="0,0,6,0"/>
-                    <TextBlock Text="Download" FontSize="13" FontWeight="SemiBold"/>
-                </StackPanel>
-            </Button>
         </Grid>
 
         <!-- Progress Section -->
