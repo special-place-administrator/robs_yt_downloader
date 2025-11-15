@@ -59,6 +59,14 @@ namespace RobsYTDownloader.Services
                         exportedCount++;
                     }
 
+                    // 3a. Export video_link_history.json
+                    var videoLinkHistoryFile = Path.Combine(appDataFolder, "video_link_history.json");
+                    if (File.Exists(videoLinkHistoryFile))
+                    {
+                        await CopyFileAsync(videoLinkHistoryFile, Path.Combine(tempFolder, "video_link_history.json"));
+                        exportedCount++;
+                    }
+
                     // 4. Export oauth_config.json (check AppData first, then install folder)
                     var oauthConfigFileAppData = Path.Combine(appDataFolder, "oauth_config.json");
                     var oauthConfigFileInstall = Path.Combine(appInstallFolder, "oauth_config.json");
@@ -79,7 +87,7 @@ namespace RobsYTDownloader.Services
                     var metadata = new
                     {
                         ExportDate = DateTime.Now,
-                        AppVersion = "1.1.0",
+                        AppVersion = "1.2.0",
                         ExportedFiles = exportedCount,
                         Note = "Rob's YouTube Downloader Settings Export"
                     };
@@ -171,6 +179,14 @@ namespace RobsYTDownloader.Services
                     if (File.Exists(historyFile))
                     {
                         await CopyFileAsync(historyFile, Path.Combine(appDataFolder, "download_history.json"));
+                        importedCount++;
+                    }
+
+                    // 3a. Import video_link_history.json
+                    var videoLinkHistoryFile = Path.Combine(tempFolder, "video_link_history.json");
+                    if (File.Exists(videoLinkHistoryFile))
+                    {
+                        await CopyFileAsync(videoLinkHistoryFile, Path.Combine(appDataFolder, "video_link_history.json"));
                         importedCount++;
                     }
 

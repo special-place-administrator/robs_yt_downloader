@@ -19,8 +19,10 @@ namespace RobsYTDownloader
         private readonly DownloadQueueManager _queueManager;
         private readonly ConfigManager _configManager;
         private readonly DownloadHistoryManager _historyManager;
+        private readonly VideoLinkHistoryManager _videoLinkHistoryManager;
         private VideoInfo? _currentVideo;
         private List<VideoFormat> _allFormats = new(); // Store ALL formats
+        private string _baseVideoTitle = string.Empty; // Store base title without quality suffix
 
         public MainWindow()
         {
@@ -29,15 +31,18 @@ namespace RobsYTDownloader
             _queueManager = new DownloadQueueManager();
             _configManager = new ConfigManager();
             _historyManager = new DownloadHistoryManager();
+            _videoLinkHistoryManager = new VideoLinkHistoryManager();
 
             _downloadManager.ProgressChanged += OnProgressChanged;
             _downloadManager.StatusChanged += OnStatusChanged;
 
-            // Bind history table to queue
+            // Bind history tables
             HistoryDataGrid.ItemsSource = _queueManager.Queue;
+            VideoLinkHistoryDataGrid.ItemsSource = _videoLinkHistoryManager.GetHistory();
 
             LoadConfig();
             LoadHistoricalDownloads();
+            UpdateVideoLinkHistoryEmptyState();
         }
 
         private void LoadConfig()
@@ -77,7 +82,7 @@ namespace RobsYTDownloader
 
         private void UpdateEmptyState()
         {
-            // Show/hide empty state
+            // Show/hide empty state for download history
             if (_queueManager.Queue.Count == 0)
             {
                 EmptyHistoryPanel.Visibility = Visibility.Visible;
@@ -87,6 +92,22 @@ namespace RobsYTDownloader
             {
                 EmptyHistoryPanel.Visibility = Visibility.Collapsed;
                 HistoryDataGrid.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void UpdateVideoLinkHistoryEmptyState()
+        {
+            // Show/hide empty state for video link history
+            var history = _videoLinkHistoryManager.GetHistory();
+            if (history.Count == 0)
+            {
+                EmptyVideoLinkHistoryPanel.Visibility = Visibility.Visible;
+                VideoLinkHistoryDataGrid.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                EmptyVideoLinkHistoryPanel.Visibility = Visibility.Collapsed;
+                VideoLinkHistoryDataGrid.Visibility = Visibility.Visible;
             }
         }
 
@@ -203,12 +224,32 @@ namespace RobsYTDownloader
 
                 // Store ALL formats
                 _allFormats = _currentVideo.Formats;
+                _baseVideoTitle = _currentVideo.Title; // Store base title
+
+                // Save to video link history
+                var historyItem = new VideoLinkHistoryItem
+                {
+                    Url = sanitizedUrl,
+                    Title = _currentVideo.Title,
+                    Formats = _allFormats,
+                    FormatCount = _allFormats.Count,
+                    FetchDate = DateTime.Now,
+                    HighestQuality = _allFormats.OrderByDescending(f => GetQualityScore(f)).FirstOrDefault()?.Resolution ?? ""
+                };
+                _videoLinkHistoryManager.AddOrUpdateVideoLink(historyItem);
+
+                // Update video link history display
+                VideoLinkHistoryDataGrid.ItemsSource = _videoLinkHistoryManager.GetHistory();
+                UpdateVideoLinkHistoryEmptyState();
 
                 // Apply current filter
                 ApplyFormatFilter();
 
+                // Update video name display
+                VideoNameText.Text = _currentVideo.Title;
+                VideoNameText.Foreground = Brushes.White;
+
                 QualityComboBox.IsEnabled = true;
-                DownloadButton.IsEnabled = true;
                 StatusText.Text = $"✓ Found {_allFormats.Count} quality options for \"{_currentVideo.Title}\"";
                 ShowNotification($"Successfully fetched {_allFormats.Count} quality options!", NotificationSeverity.Success);
             }
@@ -604,10 +645,30 @@ namespace RobsYTDownloader
             }
         }
 
-        // Format Filtering
-        private void FilterRadio_Checked(object sender, RoutedEventArgs e)
+        // Format Filtering with Toggle Buttons
+        private void FilterToggle_Click(object sender, RoutedEventArgs e)
         {
-            // Only apply filter if we have formats loaded
+            var clicked = sender as System.Windows.Controls.Primitives.ToggleButton;
+            if (clicked == null) return;
+
+            // Ensure only one toggle is checked at a time
+            if (clicked.IsChecked == true)
+            {
+                if (clicked != FilterAllToggle) FilterAllToggle.IsChecked = false;
+                if (clicked != FilterVideoAudioToggle) FilterVideoAudioToggle.IsChecked = false;
+                if (clicked != FilterVideoOnlyToggle) FilterVideoOnlyToggle.IsChecked = false;
+                if (clicked != FilterAudioOnlyToggle) FilterAudioOnlyToggle.IsChecked = false;
+
+                clicked.IsChecked = true; // Keep clicked one checked
+            }
+            else
+            {
+                // Don't allow unchecking - keep at least one checked
+                clicked.IsChecked = true;
+                return;
+            }
+
+            // Apply filter if we have formats loaded
             if (_allFormats.Count > 0)
             {
                 ApplyFormatFilter();
@@ -620,28 +681,24 @@ namespace RobsYTDownloader
 
             List<VideoFormat> filteredFormats;
 
-            if (FilterAllRadio.IsChecked == true)
+            if (FilterAllToggle.IsChecked == true)
             {
-                // Show all formats
                 filteredFormats = _allFormats;
             }
-            else if (FilterVideoAudioRadio.IsChecked == true)
+            else if (FilterVideoAudioToggle.IsChecked == true)
             {
-                // Show only formats with both video and audio already combined
                 filteredFormats = _allFormats.Where(f =>
                     f.VideoCodec != "none" && f.AudioCodec != "none"
                 ).ToList();
             }
-            else if (FilterVideoOnlyRadio.IsChecked == true)
+            else if (FilterVideoOnlyToggle.IsChecked == true)
             {
-                // Show only video-only formats (no audio)
                 filteredFormats = _allFormats.Where(f =>
                     f.VideoCodec != "none" && f.AudioCodec == "none"
                 ).ToList();
             }
-            else if (FilterAudioOnlyRadio.IsChecked == true)
+            else if (FilterAudioOnlyToggle.IsChecked == true)
             {
-                // Show only audio-only formats (no video)
                 filteredFormats = _allFormats.Where(f =>
                     f.VideoCodec == "none" && f.AudioCodec != "none"
                 ).ToList();
@@ -657,13 +714,117 @@ namespace RobsYTDownloader
                 QualityComboBox.SelectedIndex = 0;
             }
 
-            // Update status text
-            var filterName = FilterAllRadio.IsChecked == true ? "all" :
-                            FilterVideoAudioRadio.IsChecked == true ? "video+audio" :
-                            FilterVideoOnlyRadio.IsChecked == true ? "video-only" :
+            var filterName = FilterAllToggle.IsChecked == true ? "all" :
+                            FilterVideoAudioToggle.IsChecked == true ? "video+audio" :
+                            FilterVideoOnlyToggle.IsChecked == true ? "video-only" :
                             "audio-only";
 
             StatusText.Text = $"Showing {filteredFormats.Count} {filterName} formats (of {_allFormats.Count} total)";
+        }
+
+        // Quality Selection Changed - Update video name with quality suffix
+        private void QualityComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (QualityComboBox.SelectedItem is VideoFormat selectedFormat && !string.IsNullOrEmpty(_baseVideoTitle))
+            {
+                // Update video name with quality info
+                var qualityInfo = selectedFormat.DisplayName;
+                VideoNameText.Text = $"{_baseVideoTitle} - {qualityInfo}";
+                VideoNameText.Foreground = Brushes.White;
+
+                // Show download button when quality selected
+                DownloadButton.Visibility = Visibility.Visible;
+                DownloadButton.IsEnabled = true;
+            }
+        }
+
+        // Video Link History Button Handlers
+        private void UseVideoLinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var item = button?.Tag as VideoLinkHistoryItem;
+            if (item == null) return;
+
+            // Update last accessed date
+            _videoLinkHistoryManager.UpdateLastAccessedDate(item.Id);
+
+            // Populate UI with stored data
+            UrlTextBox.Text = item.Url;
+            _currentVideo = new VideoInfo
+            {
+                Title = item.Title,
+                Formats = item.Formats
+            };
+            _allFormats = item.Formats;
+            _baseVideoTitle = item.Title;
+
+            // Update video name
+            VideoNameText.Text = item.Title;
+            VideoNameText.Foreground = Brushes.White;
+
+            // Apply filter and populate dropdown
+            ApplyFormatFilter();
+
+            QualityComboBox.IsEnabled = true;
+            StatusText.Text = $"Loaded {item.FormatCount} formats from history";
+            ShowNotification($"Loaded: {item.Title}", NotificationSeverity.Success);
+        }
+
+        private void CopyVideoLinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var item = button?.Tag as VideoLinkHistoryItem;
+            if (item == null) return;
+
+            try
+            {
+                Clipboard.SetText(item.Url);
+                ShowNotification("URL copied to clipboard!", NotificationSeverity.Success);
+            }
+            catch (Exception ex)
+            {
+                ShowNotification($"Failed to copy URL: {ex.Message}", NotificationSeverity.Error);
+            }
+        }
+
+        private void RemoveVideoLinkButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var item = button?.Tag as VideoLinkHistoryItem;
+            if (item == null) return;
+
+            var result = MessageBox.Show(
+                $"Remove this video from history?\n\n{item.Title}",
+                "Confirm Remove",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                _videoLinkHistoryManager.RemoveVideoLink(item.Id);
+                VideoLinkHistoryDataGrid.ItemsSource = _videoLinkHistoryManager.GetHistory();
+                UpdateVideoLinkHistoryEmptyState();
+                ShowNotification("Video link removed from history", NotificationSeverity.Information);
+            }
+        }
+
+        // Helper method for quality scoring
+        private int GetQualityScore(VideoFormat format)
+        {
+            if (string.IsNullOrEmpty(format.Resolution)) return 0;
+
+            var resolution = format.Resolution.ToLower();
+            if (resolution.Contains("8k") || resolution.Contains("4320")) return 8000;
+            if (resolution.Contains("5k") || resolution.Contains("2880")) return 5000;
+            if (resolution.Contains("4k") || resolution.Contains("2160")) return 4000;
+            if (resolution.Contains("1440")) return 2000;
+            if (resolution.Contains("1080")) return 1080;
+            if (resolution.Contains("720")) return 720;
+            if (resolution.Contains("480")) return 480;
+            if (resolution.Contains("360")) return 360;
+            if (resolution.Contains("240")) return 240;
+
+            return 0;
         }
     }
 }

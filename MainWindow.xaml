@@ -5,7 +5,7 @@
         xmlns:converters="clr-namespace:RobsYTDownloader.Converters"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
-        Title="Rob's YouTube Downloader - v1.1.1"
+        Title="Rob's YouTube Downloader - v1.2.0"
         Height="700"
         Width="950"
         MinHeight="600"
@@ -39,9 +39,10 @@
             <RowDefinition Height="Auto"/> <!-- Notification Banner -->
             <RowDefinition Height="Auto"/> <!-- Top Bar -->
             <RowDefinition Height="Auto"/> <!-- URL Input -->
-            <RowDefinition Height="Auto"/> <!-- Quality & Download -->
+            <RowDefinition Height="Auto"/> <!-- Quality Selection -->
+            <RowDefinition Height="Auto"/> <!-- Video Name & Buttons -->
             <RowDefinition Height="Auto"/> <!-- Progress -->
-            <RowDefinition Height="*"/>    <!-- Download History -->
+            <RowDefinition Height="*"/>    <!-- History Tabs -->
         </Grid.RowDefinitions>
 
         <!-- Success/Error Notification Banner -->
@@ -112,75 +113,139 @@
 
         <!-- URL Input Section -->
         <Grid Grid.Row="2" Margin="30,0,30,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
             <TextBox x:Name="UrlTextBox"
-                     Grid.Column="0"
                      ui:ControlHelper.PlaceholderText="Paste YouTube URL here..."
                      FontSize="15"
                      VerticalContentAlignment="Center"
                      Height="46"
                      TextChanged="UrlTextBox_TextChanged"/>
+        </Grid>
 
-            <Button x:Name="DownloadButton"
-                    Grid.Column="1"
-                    Margin="12,0,0,0"
-                    Height="46"
+        <!-- Quality Selection with Inline Filters -->
+        <Grid Grid.Row="3" Margin="30,0,30,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Quality Label and Dropdown -->
+            <TextBlock Grid.Column="0"
+                       Text="Quality:"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Margin="0,0,12,0"/>
+
+            <ComboBox x:Name="QualityComboBox"
+                      Grid.Column="1"
+                      ui:ControlHelper.PlaceholderText="Select quality..."
+                      FontSize="14"
+                      Height="40"
+                      IsEnabled="False"
+                      SelectionChanged="QualityComboBox_SelectionChanged"
+                      DisplayMemberPath="DisplayName"/>
+
+            <!-- Filter Toggle Buttons (Inline) -->
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        Margin="20,0,0,0"
+                        VerticalAlignment="Center">
+                <TextBlock Text="Filters:"
+                           FontSize="13"
+                           VerticalAlignment="Center"
+                           Margin="0,0,10,0"
+                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+
+                <ToggleButton x:Name="FilterAllToggle"
+                              Content="All"
+                              Height="32"
+                              Padding="12,6"
+                              Margin="0,0,6,0"
+                              FontSize="12"
+                              IsChecked="True"
+                              Click="FilterToggle_Click"/>
+
+                <ToggleButton x:Name="FilterVideoAudioToggle"
+                              Content="Video+Audio"
+                              Height="32"
+                              Padding="12,6"
+                              Margin="0,0,6,0"
+                              FontSize="12"
+                              Click="FilterToggle_Click"/>
+
+                <ToggleButton x:Name="FilterVideoOnlyToggle"
+                              Content="Video Only"
+                              Height="32"
+                              Padding="12,6"
+                              Margin="0,0,6,0"
+                              FontSize="12"
+                              Click="FilterToggle_Click"/>
+
+                <ToggleButton x:Name="FilterAudioOnlyToggle"
+                              Content="Audio Only"
+                              Height="32"
+                              Padding="12,6"
+                              FontSize="12"
+                              Click="FilterToggle_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Video Name Display with Action Buttons -->
+        <Grid Grid.Row="4" Margin="30,0,30,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0"
+                       Text="Video:"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Margin="0,0,12,0"/>
+
+            <TextBlock x:Name="VideoNameText"
+                       Grid.Column="1"
+                       Text="No video loaded"
+                       FontSize="14"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+
+            <Button x:Name="FetchButton"
+                    Grid.Column="2"
+                    Margin="12,0,12,0"
+                    Height="40"
                     MinWidth="140"
-                    Click="DownloadButton_Click"
+                    Click="FetchButton_Click"
                     IsEnabled="False"
                     Style="{StaticResource AccentButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <ui:FontIcon Glyph="&#xE896;" FontSize="16" Margin="0,0,8,0"/>
-                    <TextBlock Text="Download" FontSize="14" FontWeight="SemiBold"/>
+                    <ui:FontIcon Glyph="&#xE896;" FontSize="14" Margin="0,0,6,0"/>
+                    <TextBlock Text="Fetch Qualities" FontSize="13"/>
+                </StackPanel>
+            </Button>
+
+            <Button x:Name="DownloadButton"
+                    Grid.Column="3"
+                    Height="40"
+                    MinWidth="120"
+                    Click="DownloadButton_Click"
+                    IsEnabled="False"
+                    Visibility="Collapsed"
+                    Style="{StaticResource AccentButtonStyle}">
+                <StackPanel Orientation="Horizontal">
+                    <ui:FontIcon Glyph="&#xE896;" FontSize="14" Margin="0,0,6,0"/>
+                    <TextBlock Text="Download" FontSize="13" FontWeight="SemiBold"/>
                 </StackPanel>
             </Button>
         </Grid>
 
-        <!-- Filter Options and Fetch Button -->
-        <Grid Grid.Row="3" Margin="30,0,30,20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <!-- Filter Radio Buttons -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
-                <TextBlock Text="Show:" FontSize="14" VerticalAlignment="Center" Margin="0,0,12,0" FontWeight="SemiBold"/>
-                <RadioButton x:Name="FilterAllRadio" Content="All Formats" GroupName="FormatFilter" IsChecked="True" Margin="0,0,20,0" Checked="FilterRadio_Checked"/>
-                <RadioButton x:Name="FilterVideoAudioRadio" Content="Video + Audio" GroupName="FormatFilter" Margin="0,0,20,0" Checked="FilterRadio_Checked"/>
-                <RadioButton x:Name="FilterVideoOnlyRadio" Content="Video Only" GroupName="FormatFilter" Margin="0,0,20,0" Checked="FilterRadio_Checked"/>
-                <RadioButton x:Name="FilterAudioOnlyRadio" Content="Audio Only" GroupName="FormatFilter" Margin="0,0,20,0" Checked="FilterRadio_Checked"/>
-
-                <Button x:Name="FetchButton"
-                        Margin="30,0,0,0"
-                        Height="36"
-                        MinWidth="140"
-                        Click="FetchButton_Click"
-                        IsEnabled="False"
-                        Style="{StaticResource AccentButtonStyle}">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:FontIcon Glyph="&#xE896;" FontSize="14" Margin="0,0,6,0"/>
-                        <TextBlock Text="Fetch Qualities" FontSize="13"/>
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-
-            <!-- Quality Dropdown -->
-            <ComboBox x:Name="QualityComboBox"
-                      Grid.Row="1"
-                      ui:ControlHelper.PlaceholderText="Select quality..."
-                      FontSize="15"
-                      Height="46"
-                      IsEnabled="False"
-                      DisplayMemberPath="DisplayName"/>
-        </Grid>
-
         <!-- Progress Section -->
-        <Grid Grid.Row="4" Margin="30,0,30,25">
+        <Grid Grid.Row="5" Margin="30,0,30,20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -212,19 +277,19 @@
                        HorizontalAlignment="Center"/>
         </Grid>
 
-        <!-- Download History Section -->
-        <Grid Grid.Row="5" Margin="30,0,30,30">
+        <!-- History Section with Tabs -->
+        <Grid Grid.Row="6" Margin="30,0,30,30">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- History Header -->
+            <!-- History Header with Action Buttons -->
             <Grid Grid.Row="0" Margin="0,0,0,12">
                 <StackPanel Orientation="Horizontal">
                     <ui:FontIcon Glyph="&#xE81C;" FontSize="20" Margin="0,0,8,0"/>
-                    <TextBlock Text="Download History" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <TextBlock Text="History" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button x:Name="OpenDownloadFolderButton"
@@ -241,106 +306,103 @@
                 </StackPanel>
             </Grid>
 
-            <!-- History DataGrid -->
-            <DataGrid x:Name="HistoryDataGrid"
-                      Grid.Row="1"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      GridLinesVisibility="None"
-                      HeadersVisibility="Column"
-                      SelectionMode="Single"
-                      Background="{DynamicResource SystemControlPageBackgroundAltHighBrush}"
-                      BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                      BorderThickness="1"
-                      ui:ControlHelper.CornerRadius="6">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*" MinWidth="200"/>
-                    <DataGridTextColumn Header="Quality" Binding="{Binding Quality}" Width="120"/>
-                    <DataGridTextColumn Header="Date" Binding="{Binding DownloadDate, StringFormat='{}{0:MM/dd/yyyy HH:mm}'}" Width="140"/>
-                    <DataGridTextColumn Header="Size" Binding="{Binding FileSize}" Width="80"/>
-                    <DataGridTextColumn Header="Status" Binding="{Binding StatusText}" Width="250"/>
-                    <DataGridTemplateColumn Header="Actions" Width="200">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <!-- Downloading state: Pause + Cancel -->
-                                    <Button Content="Pause"
-                                            Click="PauseButton_Click"
-                                            Tag="{Binding}"
-                                            Width="60"
-                                            Height="28"
-                                            Margin="0,0,4,0"
-                                            Padding="8,4"
-                                            FontSize="12"
-                                            Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Downloading}"/>
-                                    <Button Content="Cancel"
-                                            Click="CancelButton_Click"
-                                            Tag="{Binding}"
-                                            Width="60"
-                                            Height="28"
-                                            Padding="8,4"
-                                            FontSize="12"
-                                            Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Downloading|Queued|Paused}"/>
+            <!-- TabControl for Download History and Video Link History -->
+            <TabControl Grid.Row="1">
+                <!-- Download History Tab -->
+                <TabItem Header="Download History">
+                    <Grid>
+                        <!-- Download History DataGrid -->
+                        <DataGrid x:Name="HistoryDataGrid"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  GridLinesVisibility="None"
+                                  HeadersVisibility="Column"
+                                  SelectionMode="Single"
+                                  Background="{DynamicResource SystemControlPageBackgroundAltHighBrush}"
+                                  BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                                  BorderThickness="1"
+                                  ui:ControlHelper.CornerRadius="6">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*" MinWidth="200"/>
+                                <DataGridTextColumn Header="Quality" Binding="{Binding Quality}" Width="120"/>
+                                <DataGridTextColumn Header="Date" Binding="{Binding DownloadDate, StringFormat='{}{0:MM/dd/yyyy HH:mm}'}" Width="140"/>
+                                <DataGridTextColumn Header="Size" Binding="{Binding FileSize}" Width="80"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding StatusText}" Width="250"/>
+                                <DataGridTemplateColumn Header="Actions" Width="200">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <Button Content="Pause" Click="PauseButton_Click" Tag="{Binding}" Width="60" Height="28" Margin="0,0,4,0" Padding="8,4" FontSize="12" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Downloading}"/>
+                                                <Button Content="Cancel" Click="CancelButton_Click" Tag="{Binding}" Width="60" Height="28" Padding="8,4" FontSize="12" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Downloading|Queued|Paused}"/>
+                                                <Button Content="Resume" Click="ResumeButton_Click" Tag="{Binding}" Width="60" Height="28" Margin="0,0,4,0" Padding="8,4" FontSize="12" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Paused}"/>
+                                                <Button Content="Open" Click="OpenFileButton_Click" Tag="{Binding}" Width="55" Height="28" Margin="0,0,4,0" Padding="8,4" FontSize="12" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Completed}"/>
+                                                <Button Content="Folder" Click="ShowInFolderButton_Click" Tag="{Binding}" Width="55" Height="28" Margin="0,0,4,0" Padding="8,4" FontSize="12" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Completed}"/>
+                                                <Button Content="Delete" Click="DeleteFileButton_Click" Tag="{Binding}" Width="55" Height="28" Padding="8,4" FontSize="12" Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Completed|Failed|Cancelled}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
 
-                                    <!-- Paused state: Resume + Cancel -->
-                                    <Button Content="Resume"
-                                            Click="ResumeButton_Click"
-                                            Tag="{Binding}"
-                                            Width="60"
-                                            Height="28"
-                                            Margin="0,0,4,0"
-                                            Padding="8,4"
-                                            FontSize="12"
-                                            Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Paused}"/>
+                        <!-- Empty State -->
+                        <StackPanel x:Name="EmptyHistoryPanel" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
+                            <ui:FontIcon Glyph="&#xE8F1;" FontSize="48" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" Margin="0,0,0,12"/>
+                            <TextBlock Text="No downloads yet" FontSize="16" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
 
-                                    <!-- Completed state: Open + Folder + Delete -->
-                                    <Button Content="Open"
-                                            Click="OpenFileButton_Click"
-                                            Tag="{Binding}"
-                                            Width="55"
-                                            Height="28"
-                                            Margin="0,0,4,0"
-                                            Padding="8,4"
-                                            FontSize="12"
-                                            Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Completed}"/>
-                                    <Button Content="Folder"
-                                            Click="ShowInFolderButton_Click"
-                                            Tag="{Binding}"
-                                            Width="55"
-                                            Height="28"
-                                            Margin="0,0,4,0"
-                                            Padding="8,4"
-                                            FontSize="12"
-                                            Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Completed}"/>
-                                    <Button Content="Delete"
-                                            Click="DeleteFileButton_Click"
-                                            Tag="{Binding}"
-                                            Width="55"
-                                            Height="28"
-                                            Padding="8,4"
-                                            FontSize="12"
-                                            Visibility="{Binding DownloadStatus, Converter={StaticResource DownloadStatusToVisibilityConverter}, ConverterParameter=Completed|Failed|Cancelled}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+                <!-- Video Link History Tab -->
+                <TabItem Header="Video Link History">
+                    <Grid>
+                        <!-- Video Link History DataGrid -->
+                        <DataGrid x:Name="VideoLinkHistoryDataGrid"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  GridLinesVisibility="None"
+                                  HeadersVisibility="Column"
+                                  SelectionMode="Single"
+                                  Background="{DynamicResource SystemControlPageBackgroundAltHighBrush}"
+                                  BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                                  BorderThickness="1"
+                                  ui:ControlHelper.CornerRadius="6">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Date" Binding="{Binding FetchDateFormatted}" Width="140"/>
+                                <DataGridTextColumn Header="Video Name" Binding="{Binding Title}" Width="*" MinWidth="250"/>
+                                <DataGridTextColumn Header="Quality" Binding="{Binding QualityText}" Width="100"/>
+                                <DataGridTemplateColumn Header="Link" Width="80">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="Use" Click="UseVideoLinkButton_Click" Tag="{Binding}" Width="60" Height="28" Padding="8,4" FontSize="12" Style="{StaticResource AccentButtonStyle}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Actions" Width="140">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <Button Content="Copy" Click="CopyVideoLinkButton_Click" Tag="{Binding}" Width="60" Height="28" Margin="0,0,4,0" Padding="8,4" FontSize="12"/>
+                                                <Button Content="Remove" Click="RemoveVideoLinkButton_Click" Tag="{Binding}" Width="70" Height="28" Padding="8,4" FontSize="12"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
 
-            <!-- Empty State -->
-            <StackPanel Grid.Row="1"
-                        x:Name="EmptyHistoryPanel"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        Visibility="Collapsed">
-                <ui:FontIcon Glyph="&#xE8F1;" FontSize="48" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" Margin="0,0,0,12"/>
-                <TextBlock Text="No downloads yet"
-                           FontSize="16"
-                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                           HorizontalAlignment="Center"/>
-            </StackPanel>
+                        <!-- Empty State for Video Link History -->
+                        <StackPanel x:Name="EmptyVideoLinkHistoryPanel" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed">
+                            <ui:FontIcon Glyph="&#xE71B;" FontSize="48" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" Margin="0,0,0,12"/>
+                            <TextBlock Text="No video links fetched yet" FontSize="16" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+            </TabControl>
         </Grid>
 
         <!-- Loading Overlay -->
