@@ -4,7 +4,7 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
-        Title="Rob's YouTube Downloader"
+        Title="Rob's YouTube Downloader - v1.0.6"
         Height="700"
         Width="950"
         MinHeight="600"
