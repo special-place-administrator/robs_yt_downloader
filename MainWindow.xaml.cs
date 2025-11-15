@@ -598,9 +598,10 @@ namespace RobsYTDownloader
             }
             else if (FilterVideoAudioRadio.IsChecked == true)
             {
-                // Show only formats with both video and audio
+                // Show video formats (both pre-muxed and video-only that will be merged with audio)
+                // This includes high-quality formats like 1080p, 4K, 8K which are video-only
                 filteredFormats = _allFormats.Where(f =>
-                    f.VideoCodec != "none" && f.AudioCodec != "none"
+                    f.VideoCodec != "none"
                 ).ToList();
             }
             else if (FilterVideoOnlyRadio.IsChecked == true)
