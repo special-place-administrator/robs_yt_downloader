@@ -41,7 +41,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1; Check: not IsAdminInstallMode
 
 [Files]
 ; Main application files
@@ -70,9 +69,6 @@ Name: "{group}\README"; Filename: "{app}\README.md"
 
 ; Desktop icon
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-
-; Quick Launch icon
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
 [Run]
 ; Option to launch app after installation
@@ -151,15 +147,13 @@ end;
 
 // Show configuration instructions after installation
 procedure CurStepChanged(CurStep: TSetupStep);
-var
-  ResultCode: Integer;
 begin
   if CurStep = ssPostInstall then
   begin
     // Create oauth_config.json from template if it doesn't exist
     if not FileExists(ExpandConstant('{app}\oauth_config.json')) then
     begin
-      FileCopy(ExpandConstant('{app}\oauth_config.json.template'),
+      CopyFile(ExpandConstant('{app}\oauth_config.json.template'),
                ExpandConstant('{app}\oauth_config.json'), False);
     end;
 

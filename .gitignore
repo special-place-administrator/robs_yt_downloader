@@ -70,3 +70,6 @@ oauth_config.json
 installer_output/
 *.exe
 !bin/**/*.exe
+
+# Icon file (binary)
+app_icon.ico
