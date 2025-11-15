@@ -30,12 +30,12 @@ A modern Windows 11-style YouTube downloader built with WPF (.NET 8.0) that supp
 - **.NET 8.0 Runtime** - [Download here](https://dotnet.microsoft.com/download/dotnet/8.0)
 - **Node.js** (recommended) - Required for solving YouTube's n-signature challenges - [Download here](https://nodejs.org/)
 
-### Optional Dependencies (Auto-installed by app)
+### Optional Dependencies
 
-- **yt-dlp** - Downloaded automatically on first use
-- **aria2c** - Downloaded automatically on first use
-- **ffmpeg** - Downloaded automatically on first use
-- **WebView2 Runtime** - Automatically installed when you first log in with Google
+- **yt-dlp** - Install via Settings → Dependencies (one-click install)
+- **aria2c** - Install via Settings → Dependencies (one-click install)
+- **ffmpeg** - Install via Settings → Dependencies (one-click install)
+- **WebView2 Runtime** - Automatically installed when you first log in with Google (after user confirmation)
 
 ## Installation
 
@@ -149,13 +149,15 @@ Before you can use the Google Login feature, you need to create your own Google 
 
 1. **Configure Google OAuth** - Follow the "Google OAuth Setup" section above to create and configure your OAuth credentials
 2. **Launch the app** - On first launch, it will create necessary folders in `%APPDATA%\RobsYTDownloader`
-3. **Login with Google** (optional but recommended):
+3. **Install Dependencies** (required for downloading):
+   - Go to Settings → Dependencies
+   - Click "Install" for yt-dlp (required), aria2c (recommended), and ffmpeg (required for video+audio formats)
+   - Each dependency downloads from official sources with one click
+4. **Login with Google** (optional but recommended for high-quality formats):
    - Click Settings → Google Login → Login button
+   - WebView2 will be auto-installed if needed (with user confirmation)
    - Complete the OAuth flow in the WebView2 browser
    - Your authentication cookies will be saved for future use
-4. **Install Dependencies** (optional - app will auto-install when needed):
-   - Go to Settings → Dependencies
-   - Click "Install" for yt-dlp, aria2c, and ffmpeg
 
 ### Downloading Videos
 
