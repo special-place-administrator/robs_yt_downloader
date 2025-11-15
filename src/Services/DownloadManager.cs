@@ -212,13 +212,35 @@ namespace RobsYTDownloader.Services
                     return 0;
                 }).ToList();
 
+                // Create combined Video+Audio formats for each video-only format
+                var combinedFormats = CreateCombinedFormats(formats);
+                formats.AddRange(combinedFormats);
+
+                // Re-sort after adding combined formats
+                formats = formats.OrderByDescending(f =>
+                {
+                    var resStr = f.Resolution;
+                    if (resStr == "audio only") return -1;
+                    if (resStr == "Unknown") return -2;
+                    if (resStr == "Best Available") return int.MaxValue;
+
+                    var match = System.Text.RegularExpressions.Regex.Match(resStr, @"(\d+)");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int height))
+                    {
+                        return height;
+                    }
+                    return 0;
+                }).ToList();
+
                 // Also add "best" option
                 formats.Insert(0, new VideoFormat
                 {
                     FormatId = "bestvideo+bestaudio/best",
                     DisplayName = "Best Quality (Auto)",
                     Extension = "mp4",
-                    Resolution = "Best Available"
+                    Resolution = "Best Available",
+                    VideoCodec = "bestvideo",
+                    AudioCodec = "bestaudio"
                 });
 
                 StatusChanged?.Invoke(this, $"Found {formats.Count} formats");
@@ -271,6 +293,74 @@ namespace RobsYTDownloader.Services
             }
 
             return parts.Count > 0 ? string.Join(" ", parts) : "Unknown Format";
+        }
+
+        private List<VideoFormat> CreateCombinedFormats(List<VideoFormat> formats)
+        {
+            var combined = new List<VideoFormat>();
+
+            // Find all video-only formats
+            var videoOnlyFormats = formats.Where(f =>
+                f.VideoCodec != "none" && f.AudioCodec == "none").ToList();
+
+            // Find the best audio format (prefer m4a/aac, then highest bitrate)
+            var audioFormats = formats.Where(f =>
+                f.VideoCodec == "none" && f.AudioCodec != "none").ToList();
+
+            if (!audioFormats.Any() || !videoOnlyFormats.Any())
+                return combined; // No audio or video formats to combine
+
+            // Find best audio (prefer format 251 or 140 which are high quality)
+            var bestAudio = audioFormats
+                .OrderByDescending(f => f.FormatId == "251" ? 1000 : 0) // Prefer 251 (opus ~160kbps)
+                .ThenByDescending(f => f.FormatId == "140" ? 900 : 0)   // Then 140 (m4a ~128kbps)
+                .ThenByDescending(f => f.FileSize ?? 0)                  // Then by file size
+                .FirstOrDefault();
+
+            if (bestAudio == null)
+                return combined;
+
+            // Create combined format for each video-only format
+            foreach (var video in videoOnlyFormats)
+            {
+                // Build display name without "(Video Only)" suffix
+                var displayParts = new List<string>();
+
+                if (!string.IsNullOrEmpty(video.Resolution) && video.Resolution != "audio only")
+                {
+                    displayParts.Add(video.Resolution);
+                }
+
+                if (video.Fps.HasValue && video.Fps.Value > 30)
+                {
+                    displayParts.Add($"{video.Fps.Value}fps");
+                }
+
+                if (!string.IsNullOrEmpty(video.Hdr) && video.Hdr != "SDR")
+                {
+                    displayParts.Add(video.Hdr);
+                }
+
+                if (!string.IsNullOrEmpty(video.Extension))
+                {
+                    displayParts.Add($"[{video.Extension}]");
+                }
+
+                combined.Add(new VideoFormat
+                {
+                    FormatId = $"{video.FormatId}+{bestAudio.FormatId}",
+                    DisplayName = displayParts.Count > 0 ? string.Join(" ", displayParts) : "Unknown Format",
+                    Extension = video.Extension,
+                    Resolution = video.Resolution,
+                    VideoCodec = video.VideoCodec,
+                    AudioCodec = bestAudio.AudioCodec,
+                    FileSize = (video.FileSize ?? 0) + (bestAudio.FileSize ?? 0),
+                    Fps = video.Fps,
+                    Hdr = video.Hdr
+                });
+            }
+
+            return combined;
         }
 
         public async Task DownloadVideo(string url, string formatId, string outputPath)
